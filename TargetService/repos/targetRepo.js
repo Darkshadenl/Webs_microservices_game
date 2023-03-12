@@ -4,7 +4,7 @@ function putMessage(value) {
     return new Promise((resolve, reject) => {
 
         const target = new Target({
-            uploadByUsername: value.uploadByUsername,
+            username: value.username,
             photoLink: value.photoLink,
             location: value.location
         })

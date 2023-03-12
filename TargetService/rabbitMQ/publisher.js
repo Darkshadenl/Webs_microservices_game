@@ -16,10 +16,10 @@ async function assertExchange() {
     }
 }
 
-const publish = async function (msg) {
+const publish = async function (payload) {
     try {
         await assertExchange();
-        await channel.publish(exchangeName, process.env.ROUTING_KEY, Buffer.from(JSON.stringify(msg)))
+        await channel.publish(exchangeName, process.env.ROUTING_KEY, Buffer.from(JSON.stringify(payload)))
     } catch (e) {
         console.log(e);
     }

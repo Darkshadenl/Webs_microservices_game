@@ -1,12 +1,12 @@
 require('./mongooseConnection');
+var Rabbit = require('./rabbitMQ/Rabbit');
 
 const express= require('express');
-const indexRouter = require('./routes/index');
+const router = require('./routes/index');
 const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
 const app = express();
 
 // view engine setup
@@ -19,8 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routing
-app.use('/', indexRouter);
-
+app.use('/', router);
 
 // catch 404 and forward to error handler
 app.use(function (req,

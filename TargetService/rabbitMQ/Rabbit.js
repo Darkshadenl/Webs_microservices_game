@@ -1,68 +1,71 @@
 const amqp = require('amqplib');
 const uri = 'amqp://rabbit:5672';
 const exchangeName = 'Main';
-const selfName = process.env.COPY_KEY || 'Undefined';
+const selfName = process.env.ROUTING_KEY || 'Undefined';
 
-var Rabbit = (function () {
-    var connection = undefined;
-    var channel = undefined;
 
-    return {
-        getChannel: getChannel,
-        reset: reset,
-    };
+class RabbitMQ {
 
-    async function setup() {
+    constructor() {
+        this.channel = undefined;
+        this.connection = undefined;
+        this.setup().then(r => console.log('RabbitMQ setup complete'));
+    }
+
+    async setup() {
         try {
-            await _createConnection();
-            await _createChannel();
-            await _createExchange();
+            await this._createConnection();
+            await this._createChannel();
+            await this._createExchange();
         } catch (e) {
             console.log(e);
         }
     }
 
-    async function reset(){
-        await setup();
-        return channel;
+    async reset(){
+        await this.setup();
+        return this.channel;
     }
 
-    async function getChannel() {
-        if (channel === undefined || connection === undefined) {
-            await setup();
+    async getChannel() {
+        if (this.channel === undefined || this.connection === undefined) {
+            await this.setup();
         }
-        return channel;
+        return this.channel;
     }
 
-    async function _createExchange() {
-        await channel.assertExchange(exchangeName, 'direct', { durable: true });
+    async _createExchange() {
+        await this.channel.assertExchange(exchangeName, 'direct', { durable: true });
     }
 
-    async function _createChannel() {
-        if (channel !== undefined) {
+    async _createChannel() {
+        if (this.channel !== undefined) {
             return;
         }
 
         try {
-            channel = await connection.createChannel();
+            this.channel = await this.connection.createChannel();
         } catch (error) {
             console.log('Error creating channel (from Rabbit.js)');
             console.log(error);
         }
     }
 
-    async function _createConnection() {
-        if (connection !== undefined) {
-            return connection;
+    async _createConnection() {
+        if (this.connection !== undefined) {
+            return this.connection;
         }
         try {
-            connection = await amqp.connect(uri);
+            this.connection = await amqp.connect(uri);
             console.log(`Created connection (from Rabbit.js) ${selfName}`);
         } catch (e) {
             console.log('Error creating connection (from Rabbit.js)');
             console.log(e);
         }
     }
-})();
+
+}
+
+const Rabbit = new RabbitMQ();
 
 module.exports = Rabbit;

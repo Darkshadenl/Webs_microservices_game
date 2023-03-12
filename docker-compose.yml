@@ -5,15 +5,15 @@ networks:
 
 services:
 
-#  rabbit:
-#    image: rabbitmq:3-management
-#    container_name: rabbit
-#    hostname: rabbit
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-#    networks:
-#      - ass_network
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ass_network
 
   targetservice:
     build:
