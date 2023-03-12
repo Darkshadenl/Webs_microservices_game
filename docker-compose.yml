@@ -5,33 +5,32 @@ networks:
 
 services:
 
-  rabbit:
-    image: rabbitmq:3-management
-    container_name: rabbit
-    hostname: rabbit
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - ass_network
+#  rabbit:
+#    image: rabbitmq:3-management
+#    container_name: rabbit
+#    hostname: rabbit
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    networks:
+#      - ass_network
 
   targetservice:
     build:
-      context: ./TargetService
+      context: ./TargetService/
     container_name: TargetService
     ports:
-      - "3001:12345"
+      - "3001:3001"
       - "9001:9292"
     volumes:
-      - "./TargetService/src:/usr/src/app"
+      - "./TargetService:/opt/project/"
+      - "exclude:/opt/project/node_modules"
     environment:
+      PORT: 3001
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
       ROUTING_KEY: "Target"
-    command:
-      - "yarn"
-      - "run"
-      - ${ENV}
+    command: yarn run dev
     depends_on:
       - targetdatabase
     networks:
@@ -52,3 +51,5 @@ services:
     networks:
       - ass_network
 
+volumes:
+  exclude:
