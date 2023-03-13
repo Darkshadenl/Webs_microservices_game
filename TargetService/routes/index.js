@@ -6,23 +6,30 @@ const router = express.Router();
 const {createPayload} = require("../payloadHandling/payloadCreator");
 const publisher = require("../rabbitMQ/publisher");
 const createError = require("http-errors");
-const bodyParser = require("body-parser");
+const multer = require('multer')
+const upload = multer();
 
-const multer = require('multer');
-let upload = multer();
+const targetUpload = upload.fields([
+    {name: 'image', maxCount: 1},
+    {name: 'target', maxCount: 1}
+]);
 
+router.post('/target',
+    targetUpload,
+    async (req, res, next) => {
+    const data = JSON.parse(req.body.target);
+    const image = req.files.image[0]['buffer'];
 
-router.post('/target', async (req,
-                              res,
-                              next) => {
+    const {username, location} = data;
 
-    const {username, base64, location} = req.body;
-
-    if (!username || !base64 || !location) {
+    if (!username || !location || !image) {
         return next(createError(400, 'Missing parameters'))
     }
 
-    await putMessage(req.body)
+    const binaryData = Buffer.from(image, 'utf8');
+    const base64EncodedData = binaryData.toString('base64');
+
+    await putMessage(username, location, base64EncodedData)
         .then(answer => {
             res.status(202).send(`Target: (${answer.id}) is aangemaakt.`);
             return answer;
@@ -45,14 +52,6 @@ router.post('/target', async (req,
             next(new Error('Saving to database failed or target already exists.'));
         });
 })
-
-router.post('/target/img',
-    bodyParser.raw({type: 'image/*', limit: '5mb'}),
-    async (req, res, next) => {
-        const binaryData = Buffer.from(req.body, 'utf8');
-        const base64EncodedData = binaryData.toString('base64');
-        res.send(base64EncodedData);
-    });
 
 router.delete('/target/:id', async (req,
                                     res,

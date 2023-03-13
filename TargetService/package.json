@@ -9,14 +9,15 @@
     "http-errors": "^2.0.0",
     "jade": "^1.11.0",
     "mongoose": "^7.0.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1"
   },
   "scripts": {
     "start": "node ./bin/server",
     "test": "jest",
     "lint": "npx eslint ..",
-    "dev": "nodemon --legacy-watch --trace-warnings -r dotenv/config ./bin/www",
-    "debug": "nodemon --inspect=0.0.0.0:9292 --legacy-watch -r dotenv/config ./bin/www"
+    "dev": "nodemon --legacy-watch --trace-warnings -r dotenv/config ./bin/server",
+    "debug": "nodemon --inspect=0.0.0.0:9292 --legacy-watch -r dotenv/config ./bin/server"
   },
   "devDependencies": {
     "debug": "^4.3.4"

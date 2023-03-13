@@ -1,12 +1,12 @@
 const Target = require('../models/target');
 
-function putMessage(value) {
+function putMessage(username, location, base64) {
     return new Promise((resolve, reject) => {
 
         const target = new Target({
-            username: value.username,
-            base64: value.base64,
-            location: value.location
+            base64: base64,
+            username: username,
+            location: location
         })
 
         target.save()

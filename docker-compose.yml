@@ -30,7 +30,7 @@ services:
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
       ROUTING_KEY: "Target"
-    command: yarn run dev
+    command: yarn run ${ENV}
     depends_on:
       - targetdatabase
     networks:
