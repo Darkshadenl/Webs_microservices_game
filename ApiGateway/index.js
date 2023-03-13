@@ -4,6 +4,8 @@ const port = process.env.PORT || 3010;
 const cors = require('cors');
 const strategy = require('../config/passportStrategy');
 const passport = require('passport');
+const interceptor = require('../config/interceptor');
+
 require('dotenv').config();
 
 // Generic Express setup
@@ -15,11 +17,12 @@ passport.use(strategy.InternalStrategy);
 app.use(passport.initialize());
 
 // JWT header injection setup
-// const { default: axios } = require('axios');
-// axios.interceptors.request.use(Interceptor);
+const { default: axios } = require('axios');
+axios.interceptors.request.use(interceptor);
 
 // Register imported routes
   app.use('/auth', require('./routes/auths'));
+  app.use('/test', passport.authenticate('jwt', {session: false}), require('./routes/testAuth'));
 
 
 app.listen(port, () => {

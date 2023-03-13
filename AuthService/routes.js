@@ -26,16 +26,12 @@ router.get('/welcome',(req, res) => {
 router.post('/register', (req, res) => {
     console.log('Registering user...');
     const body = req.body;
-    const salt = bcrypt.genSaltSync(10);
+    const salt = bcrypt.genSaltSync();
 
-    console.log("password = ", body.password);
-    console.log("hash = ", salt);
 
 
     const user = new User({
-        // Generate UID
         email: body.email,
-        // Hash password
         hash: bcrypt.hashSync(body.password, salt),
         salt: salt,
         isOwner: body.isOwner,
@@ -43,15 +39,54 @@ router.post('/register', (req, res) => {
 
     user.save()
         .then(user => {
-            console.log("Registered user");
             res.status(201).json(user);
         })
         .catch(err => {
-            console.log("Error registering user", err);
             res.status(400).json({
                 error: err
             });
         });
 });
+
+
+router.post('/login', async function (req, res, next) {
+    try {
+        const user = await User.findOne({ email: req.body.email })
+        if (user) {
+            console.log("user pw" + user.hash)
+            console.log("req pw" + req.body.password)
+            console.log("user found")
+            const checkPassword = await bcrypt.compare(req.body.password, user.hash)
+            console.log("pw found")
+
+            if(checkPassword){
+                res.status(201).json({token: createToken(user)});
+                return;
+            }
+
+            return res.status(401).json({
+                error: 'Invalid credentials'
+            });
+        }
+        return res.status(401).json({
+            error: 'Invalid credentials'
+        });
+
+    } catch (error) {
+        console.error(error)
+        return res.status(401).json({
+            error: 'Login failed'
+        });
+    }
+})
+
+
+function createToken (user) {
+    //TODO replace with secret key from .env
+    console.log(process.env.JWT_SECRET)
+    return jwt.sign({
+        uid: user.uid,
+    }, 'secret');
+}
 
 module.exports = router;

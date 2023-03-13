@@ -2,7 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const passport = require('passport');
 const axios = require('axios');
-const authService    =  process.env.AUTHURL
+const authService    =  process.env.AUTHURL || 'http://localhost:3011/'
 
 //passport
 {
@@ -30,6 +30,7 @@ const requestHandler = require('../helpers/request-handler')
 
 
 router.post('/register',requestHandler.send('post','register'));
+router.post('/login',requestHandler.send('post','login'));
 router.get('/welcome',requestHandler.send('get','welcome'));
 
 
