@@ -1,0 +1,23 @@
+{
+  "name": "targetservice",
+  "version": "0.0.0",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "http-errors": "^2.0.0",
+    "jade": "^1.11.0",
+    "mongoose": "^7.0.1",
+    "morgan": "^1.10.0"
+  },
+  "scripts": {
+    "start": "node ./bin/server",
+    "test": "jest",
+    "lint": "npx eslint ..",
+    "dev": "nodemon --legacy-watch --trace-warnings -r dotenv/config ./bin/www",
+    "debug": "nodemon --inspect=0.0.0.0:9292 --legacy-watch -r dotenv/config ./bin/www"
+  },
+  "devDependencies": {
+    "debug": "^4.3.4"
+  }
+}

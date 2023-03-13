@@ -1,0 +1,55 @@
+version: '3.9'
+
+networks:
+  ass_network:
+
+services:
+
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ass_network
+
+  targetservice:
+    build:
+      context: ./TargetService/
+    container_name: TargetService
+    ports:
+      - "3001:3001"
+      - "9001:9292"
+    volumes:
+      - "./TargetService:/opt/project/"
+      - "exclude:/opt/project/node_modules"
+    environment:
+      PORT: 3001
+      MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
+      ENV: ${ENV}
+      ROUTING_KEY: "Target"
+    command: yarn run dev
+    depends_on:
+      - targetdatabase
+    networks:
+      - ass_network
+
+  targetdatabase:
+    image: mongo:latest
+    container_name: TargetDatabase
+    restart: on-failure
+    ports:
+      - "3010:27017"
+      - "2001:27018"
+    volumes:
+      - ./volumes/TargetDatabase:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DBUSER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DBPASSWORD}
+    networks:
+      - ass_network
+
+volumes:
+  exclude:
