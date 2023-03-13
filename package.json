@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"node ApiGateway/index.js\" \"node AuthService/index.js\" \"node TestAuthService/index.js\""
+    "start": "concurrently \"node ApiGateway/index.js\" \"node AuthService/index.js\""
   },
   "author": "",
   "license": "ISC",

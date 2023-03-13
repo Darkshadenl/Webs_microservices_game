@@ -32,17 +32,13 @@ router.get('/test',(req, res) => {
 
 // Setup registration
 router.post('/register', (req, res) => {
-    console.log('Registering user...');
-    const body = req.body;
     const salt = bcrypt.genSaltSync();
 
-
-
     const user = new User({
-        email: body.email,
-        hash: bcrypt.hashSync(body.password, salt),
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, salt),
         salt: salt,
-        isOwner: body.isOwner,
+        isOwner: req.body.isOwner,
     });
 
     user.save()
@@ -61,25 +57,16 @@ router.post('/login', async function (req, res, next) {
     try {
         const user = await User.findOne({ email: req.body.email })
         if (user) {
-            const checkPassword = await bcrypt.compare(req.body.password, user.hash)
-
+            const checkPassword = await bcrypt.compare(req.body.password, user.password)
             if(checkPassword){
                 console.log("user logging in")
-                const token = jwt.sign({
-                    uid: user._id,
-                }, process.env.JWT_SECRET);
-
-                // Remove hash and salt from user object
-                user.hash = undefined;
-                user.salt = undefined;
-                // Send user with token
+                const token = createOpaqueToken(user._id);
                 res.status(201).json({
                     user: user,
                     token: token
                 });
                 return
             }
-
             return res.status(401).json({
                 error: 'Invalid credentials'
             });
@@ -97,9 +84,9 @@ router.post('/login', async function (req, res, next) {
 })
 
 
-function createToken (user) {
+function createOpaqueToken (userId) {
     return jwt.sign({
-        uid: user.uid,
+        id: userId,
     }, process.env.JWT_SECRET);
 }
 

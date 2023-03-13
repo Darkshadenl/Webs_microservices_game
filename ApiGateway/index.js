@@ -22,7 +22,6 @@ axios.interceptors.request.use(interceptor);
 
 // Register imported routes
   app.use('/auth', require('./routes/auths'));
-  app.use('/test', passport.authenticate('jwt', {session: false}), require('./routes/testAuth'));
 
 
 app.listen(port, () => {

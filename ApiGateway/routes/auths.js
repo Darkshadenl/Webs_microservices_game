@@ -2,7 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const passport = require('passport');
 const axios = require('axios');
-const authService    =  process.env.AUTHURL || 'http://localhost:3011/'
+const authService    =  process.env.AUTHURL || 'http://localhost:3000/'
 
 //passport
 {
@@ -12,7 +12,7 @@ const jwtOptions = require('../../config/passportStrategy').options
 const strategy = new JwtStrategy(jwtOptions, (jwt_payload, done) => {
     // Check if JWT contains user uid
     console.log("payload = " + jwt_payload)
-    if (jwt_payload.uid !== undefined) {
+    if (jwt_payload.id !== undefined) {
         console.log("jwt defined")
 
         return done(null, jwt_payload);
@@ -37,7 +37,6 @@ router.post('/register',requestHandler.send('post','register'));
 router.post('/login',requestHandler.send('post','login'));
 router.get('/test',requestHandler.send('get','test'));
 router.get('/welcome', passport.authenticate('jwt', { session: false }), requestHandler.send('get','welcome'));
-router.post('/get-user-id', passport.authenticate('jwt', { session: false }), requestHandler.send('post', 'get-user-id'));
 
 
 
