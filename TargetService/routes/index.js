@@ -3,54 +3,60 @@ const {deleteMessage, putMessage} = require('../repos/targetRepo')
 const express = require('express');
 const router = express.Router();
 
-const { createPayload } = require("../payloadHandling/payloadCreator");
+const {createPayload} = require("../payloadHandling/payloadCreator");
 const publisher = require("../rabbitMQ/publisher");
 const createError = require("http-errors");
+const bodyParser = require("body-parser");
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+const multer = require('multer');
+let upload = multer();
 
 
 router.post('/target', async (req,
-                           res,
-                           next) => {
+                              res,
+                              next) => {
 
-  const {username, photoLink, location} = req.body;
+    const {username, base64, location} = req.body;
 
-  if (!username || !photoLink || !location) {
-    return next(createError(400, 'Missing parameters'))
-  }
+    if (!username || !base64 || !location) {
+        return next(createError(400, 'Missing parameters'))
+    }
 
-  let answer = await putMessage(req.body)
-      .then(answer => {
-        res.status(202).send(`Target: (${answer.id}) is aangemaakt.`);
-        return answer;
-      })
-      .then(answer => {
-        const payload = createPayload(
-            'create',
-            `${answer.id}`,
-            "user",
-            {
-              uploadByUsername: answer.uploadByUsername,
-              photoLink: answer.photoLink,
-              location: answer.location
-            },
-        );
-        publisher(payload);
-      })
-      .catch(err => {
-        console.log("Saving to database failed or target already exists: " + err);
-        next(new Error('Saving to database failed or target already exists.'));
-      });
+    await putMessage(req.body)
+        .then(answer => {
+            res.status(202).send(`Target: (${answer.id}) is aangemaakt.`);
+            return answer;
+        })
+        .then(answer => {
+            const payload = createPayload(
+                'create',
+                `${answer.id}`,
+                "user",
+                {
+                    uploadByUsername: answer.uploadByUsername,
+                    base64: answer.base64,
+                    location: answer.location
+                },
+            );
+            publisher(payload);
+        })
+        .catch(err => {
+            console.log("Saving to database failed or target already exists: " + err);
+            next(new Error('Saving to database failed or target already exists.'));
+        });
 })
 
+router.post('/target/img',
+    bodyParser.raw({type: 'image/*', limit: '5mb'}),
+    async (req, res, next) => {
+        const binaryData = Buffer.from(req.body, 'utf8');
+        const base64EncodedData = binaryData.toString('base64');
+        res.send(base64EncodedData);
+    });
 
 router.delete('/target/:id', async (req,
-                                 res,
-                                 next) => {
+                                    res,
+                                    next) => {
 
     const id = req.params.id;
 

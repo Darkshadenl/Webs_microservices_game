@@ -1,7 +1,7 @@
 const Mongoose = require('mongoose');
 
 let targetSchema = new Mongoose.Schema({
-    photoLink: { type: 'string', required: true, unique: true},
+    base64: { type: 'string', required: true, unique: true},
     username: { type: 'string', required: true},
     location: { type: 'string', required: true},
 })

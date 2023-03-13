@@ -5,7 +5,7 @@ function putMessage(value) {
 
         const target = new Target({
             username: value.username,
-            photoLink: value.photoLink,
+            base64: value.base64,
             location: value.location
         })
 
@@ -27,11 +27,10 @@ function deleteMessage(value) {
         Target.deleteOne({ _id: value })
             .then((ok) => {
                 if (ok.deletedCount === 0) {
-                    resolve({message: "Nothing deleted. No such photoLink.", code: 0});
+                    resolve({message: "Nothing deleted.", code: 0});
                 }
                 resolve({message: `Deleted ${ok.deletedCount} items successfully`, code: 1});
             }).catch((e) => {
-            //https://microservices.io/patterns/observability/application-logging.html
             reject(`Deleting failed: ${e}`);
         })
     })
