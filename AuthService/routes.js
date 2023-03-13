@@ -18,8 +18,16 @@ const jwt = require('jsonwebtoken');
 passport.use(strategy);
 router.use(passport.initialize());
 
+router.post('/get-user-id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    res.status(200).json(req.user);
+});
+
+
 router.get('/welcome',(req, res) => {
     res.send('Welcome');
+} )
+router.get('/test',(req, res) => {
+    res.send('test');
 } )
 
 // Setup registration
@@ -53,15 +61,23 @@ router.post('/login', async function (req, res, next) {
     try {
         const user = await User.findOne({ email: req.body.email })
         if (user) {
-            console.log("user pw" + user.hash)
-            console.log("req pw" + req.body.password)
-            console.log("user found")
             const checkPassword = await bcrypt.compare(req.body.password, user.hash)
-            console.log("pw found")
 
             if(checkPassword){
-                res.status(201).json({token: createToken(user)});
-                return;
+                console.log("user logging in")
+                const token = jwt.sign({
+                    uid: user._id,
+                }, process.env.JWT_SECRET);
+
+                // Remove hash and salt from user object
+                user.hash = undefined;
+                user.salt = undefined;
+                // Send user with token
+                res.status(201).json({
+                    user: user,
+                    token: token
+                });
+                return
             }
 
             return res.status(401).json({
@@ -82,11 +98,9 @@ router.post('/login', async function (req, res, next) {
 
 
 function createToken (user) {
-    //TODO replace with secret key from .env
-    console.log(process.env.JWT_SECRET)
     return jwt.sign({
         uid: user.uid,
-    }, 'secret');
+    }, process.env.JWT_SECRET);
 }
 
 module.exports = router;

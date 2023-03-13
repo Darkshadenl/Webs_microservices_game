@@ -27,6 +27,7 @@ class CircuitBreakerService {
             (method, resource, body, user) => {
                 // Add the user's id to the headers if they are logged in
                 if (user) {
+                    console.log("user logged in")
                     return axiosInstance[method](resource, body, {
                         headers: {
                             'X-Interceptor-Uid': user.uid

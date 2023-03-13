@@ -11,9 +11,13 @@ const jwtOptions = require('../../config/passportStrategy').options
 
 const strategy = new JwtStrategy(jwtOptions, (jwt_payload, done) => {
     // Check if JWT contains user uid
+    console.log("payload = " + jwt_payload)
     if (jwt_payload.uid !== undefined) {
+        console.log("jwt defined")
+
         return done(null, jwt_payload);
     }
+    console.log("jwt undefined")
     return done(null, false);
 });
 
@@ -31,7 +35,10 @@ const requestHandler = require('../helpers/request-handler')
 
 router.post('/register',requestHandler.send('post','register'));
 router.post('/login',requestHandler.send('post','login'));
-router.get('/welcome',requestHandler.send('get','welcome'));
+router.get('/test',requestHandler.send('get','test'));
+router.get('/welcome', passport.authenticate('jwt', { session: false }), requestHandler.send('get','welcome'));
+router.post('/get-user-id', passport.authenticate('jwt', { session: false }), requestHandler.send('post', 'get-user-id'));
+
 
 
 module.exports = router

@@ -13,18 +13,13 @@ class RequestHandler {
      */
     send(method, path) {
         method = method.toLowerCase();
-
         return (req, res, next) => {
             this.circuitBreaker.fire(method, path || req.url, req.body, req.user)
                 .then(  response => {
-                    console.log(path)
+                    console.log("fire")
                     res.status(response.status).json(response.data)
                 })
                 .catch(error => {
-                    console.log("invalid path")
-                    console.log(path)
-                    console.log(method)
-
                     // Return error from response if it exists
                     if (error.response) {
                         res.status(error.response.status).send(error.response.data);

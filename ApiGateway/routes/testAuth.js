@@ -4,7 +4,7 @@ const passport = require('passport');
 const axios = require('axios');
 const {Strategy: JwtStrategy} = require("passport-jwt");
 const {options: jwtOptions} = require("../../config/passportStrategy");
-const authService    =  process.env.AUTHURL || 'http://localhost:3000/'
+const authService    =  process.env.AUTHURL || 'http://localhost:3011/'
 
 const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(process.env.AUTHURL);
