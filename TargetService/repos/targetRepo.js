@@ -54,9 +54,9 @@ async function retrieveTarget(username){
     })
 }
 
-async function deleteTarget(value) {
+async function deleteTarget(id) {
     return new Promise((resolve, reject) => {
-        Target.deleteOne({ _id: value })
+        Target.deleteOne({ 'targets._id': id })
             .then((ok) => {
                 if (ok.deletedCount === 0) {
                     resolve({message: "Nothing deleted.", code: 0});

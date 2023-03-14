@@ -84,7 +84,6 @@ router.delete('/target/:id', async (req,
 
     await deleteTarget(id).then((m) => {
         if (m.code === 0) {
-            console.log(`${m.message}`);
             res.send(m.message);
         }
         res.send(`${m.message}: ${id}`);
