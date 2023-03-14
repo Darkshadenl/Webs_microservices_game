@@ -29,14 +29,25 @@ router.use(passport.initialize());
 const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(process.env.AUTHURL);
 
-const requestHandler = require('../helpers/request-handler')
-    .createNewRequestHandler(circuitBreaker);
 
+function send(method, path) {
+    return (req, res, next) => {
+        circuitBreaker.fire(method, path || req.url, req.body, req.user)
+            .then(  response => {
+                res.status(response.status).json(response.data)
+            })
+            .catch(error => {
+                if (error.response) {
+                    res.status(error.response.status).send(error);
+                }
+            });
+    }
+}
 
-router.post('/register',requestHandler.send('post','register'));
-router.post('/login',requestHandler.send('post','login'));
-router.get('/test',requestHandler.send('get','test'));
-router.get('/welcome', passport.authenticate('jwt', { session: false }), requestHandler.send('get','welcome'));
+router.post('/register',send('post','register'));
+router.post('/login',send('post','login'));
+router.get('/test',send('get','test'));
+router.get('/welcome', passport.authenticate('jwt', { session: false }), send('get','welcome'));
 
 
 

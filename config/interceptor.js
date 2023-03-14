@@ -2,7 +2,6 @@ var jwt = require('jsonwebtoken');
 const apiKey = process.env.API_KEY;
 
 const interceptor = function (config) {
-
     const id = config.headers['UserId'];
     if (id !== undefined) {
         const token = jwt.sign({ apiKey, id }, process.env.JWT_SECRET);
