@@ -88,7 +88,7 @@ async function saveUserTarget(user, target) {
                 }
             })
             .catch(e => {
-                console.trace('Saving failed @ saveUserTarget')
+                console.trace('Saving failed')
                 reject(e);
             })
     })

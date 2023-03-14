@@ -10,27 +10,6 @@ const multer = require('multer')
 
 const upload = multer();
 
-
-
-router.post('/target/test',
-    async (req, res, next) => {
-    const saveuser = await saveUser('test').catch((e) => { console.log(e) });
-
-    // const user = await retrieveTarget('test')
-    //     .catch((e) => { console.log(e) });
-
-    console.log(saveuser)
-
-    saveuser.targets.push({
-        location: 'test',
-        base64: 'test'
-    })
-    saveuser.save().catch((e) => { console.log(e) });
-
-    console.log(saveuser)
-    res.status(200).send('OK');
-});
-
 const targetUpload = upload.fields([
     {name: 'image', maxCount: 1},
     {name: 'target', maxCount: 1}
@@ -47,18 +26,22 @@ router.post('/target',
             return next(createError(400, 'Missing parameters'))
         }
 
-        await userExists(username).then((user) => {
+        const user = await userExists(username)
+
+        try {
             if (user !== null && user !== undefined) {
-                saveUserTarget(user, {location, image})
-                    .catch((e) => { console.log(e) });
+                await saveUserTarget(user, {location, image})
             } else {
                 // User does not exist, create user and save target to user
-                saveUser(username)
-                    .then((user) => { saveUserTarget(user, {location, image})
+                await saveUser(username)
+                    .then((user) => {
+                        saveUserTarget(user, {location, image})
                     })
-                    .catch((e) => { console.log(e) });
             }
-        })
+        } catch (e) {
+            console.trace(`Something went wrong ${e}`)
+        }
+
         res.status(200).send('OK');
     })
 
@@ -90,13 +73,13 @@ router.delete('/target/:id', async (req,
     }).catch(err => {
         console.trace(`Deleting target ${id} failed: ${err}`);
     });
-
-    const payloadCreator = createPayload('delete', `${id}`, "user", {});
-    await publisher(payloadCreator.getPayload())
-        .catch(err => {
-            console.trace("Sending delete message to rabbitMQ failed: " + err);
-            next(new Error('Messaging failed'));
-        });
+     // TODO fix payload
+    // const payloadCreator = createPayload('delete', `${id}`, "user", {});
+    // await publisher(payloadCreator.getPayload())
+    //     .catch(err => {
+    //         console.trace("Sending delete message to rabbitMQ failed: " + err);
+    //         next(new Error('Messaging failed'));
+    //     });
 })
 
 module.exports = router;
