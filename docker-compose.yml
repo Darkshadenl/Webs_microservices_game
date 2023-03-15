@@ -21,7 +21,7 @@ services:
     container_name: TargetService
     ports:
       - "3001:3001"
-      - "9001:9292"
+      - "9001:9229"
     volumes:
       - "./TargetService:/opt/project/"
       - "exclude:/opt/project/node_modules"
@@ -30,11 +30,33 @@ services:
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
       ROUTING_KEY: "Target"
-    command: yarn run dev
+    command: yarn run ${ENV}
     depends_on:
       - targetdatabase
     networks:
       - ass_network
+
+  scoreservice:
+    build:
+      context: ./ScoreService/
+    container_name: ScoreService
+    ports:
+      - "3002:3001"
+      - "9002:9229"
+    volumes:
+      - "./ScoreService:/opt/project/"
+      - "exclude:/opt/project/node_modules"
+    environment:
+      PORT: 3001
+      MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@ScoreDatabase:27017"
+      ENV: ${ENV}
+      ROUTING_KEY: "Score"
+    command: yarn run ${ENV}
+    depends_on:
+      - scoredatabase
+    networks:
+      - ass_network
+
 
   targetdatabase:
     image: mongo:latest
@@ -45,6 +67,21 @@ services:
       - "2001:27018"
     volumes:
       - ./volumes/TargetDatabase:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DBUSER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DBPASSWORD}
+    networks:
+      - ass_network
+
+  scoredatabase:
+    image: mongo:latest
+    container_name: ScoreDatabase
+    restart: on-failure
+    ports:
+      - "3011:27017"
+      - "2002:27018"
+    volumes:
+      - ./volumes/ScoreDatabase:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DBUSER}
       MONGO_INITDB_ROOT_PASSWORD: ${DBPASSWORD}
