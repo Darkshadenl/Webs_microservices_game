@@ -7,7 +7,7 @@ const publisher = require("../rabbitMQ/publisher");
     *  @param {string} username - The username of the user to save
     *  @returns {Promise<Target>} - The saved user
     */
-async function saveUser(username) {
+    async function saveUser(username) {
     const target = new Target({
         username: username,
     })
@@ -52,10 +52,6 @@ async function retrieveTarget(username){
             reject('Something went wrong. Error: ' + e)
         });
     })
-}
-
-async function findTargetByIndex(index){
-
 }
 
 async function deleteTarget(id) {
@@ -132,4 +128,5 @@ module.exports = {
     saveUserTarget,
     saveUser,
     retrieveTarget,
+    checkForExistingImage
 }
