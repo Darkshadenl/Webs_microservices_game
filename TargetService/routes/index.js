@@ -1,4 +1,4 @@
-const {deleteTarget, saveUser, userExists, saveUserTarget, retrieveTarget} = require('../repos/targetRepo')
+const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetById, findSingleTargetById} = require('../repos/targetRepo')
 
 const express = require('express');
 const router = express.Router();
@@ -15,7 +15,7 @@ const targetUpload = upload.fields([
     {name: 'target', maxCount: 1}
 ]);
 
-router.post('/target',
+router.post('/',
     targetUpload,
     async (req, res, next) => {
         const data = JSON.parse(req.body.target);
@@ -26,7 +26,7 @@ router.post('/target',
             return next(createError(400, 'Missing parameters'))
         }
 
-        const user = await userExists(username);
+        const user = await findTargetByUsername(username);
         let response = ""
 
         try {
@@ -43,36 +43,66 @@ router.post('/target',
             }
             res.status(200).send(`Target created. ${response}..`);
         } catch (e) {
-            next(createError(400, `Something went wrong. Check picture filesize.`))
+            next(createError(400, `Something went wrong.`))
             console.trace(`Something went wrong ${e}`)
         }
     })
 
-router.get('/target/:username/:index',
+/**
+ * Get a single target by username.
+ * Can use query filters to filter on index or on id. If id is provided, index is ignored.
+ */
+router.get('/byUsername/:username',
     async (req, res, next) => {
-        const id = req.params.id;
-        const index = req.params.index;
+        const index = req.query.index;
+        const id = req.query.id;
+        const username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
 
-        if (!id || !index) {
-            next(new Error(`Incorrect format. id:${id} index:${index}`));
+        if (!username || typeof username !== 'string') {
+            next(new Error(`Incorrect format. Username missing or not a string`));
         }
 
-        res.render('image', {id: '10', username: 'quinten', location: 'ams'});
+        await findTargetByUsername(username).then(t => {
+            if (index) {
+                res.json(t.targets[index])
+            } else if (id) {
+                res.json(t.targets.id(id))
+            } else {
+                res.json(t.targets)
+            }
+        }).catch(e => {
+            next(createError(400, `Something went wrong.`))
+        })
+
     })
 
-
-router.get('/target/:id',
+/**
+ * Get a full target. This means a full target container, not just a single target.
+ * So this will return user details and all targets.
+ */
+router.get('/:id',
     async (req, res, next) => {
         const id = req.params.id;
 
         if (!id) {
-            next(new Error('Incorrect format.'));
+            next(new Error('Incorrect format. _id is missing.'));
         }
 
-        res.render('image', {id: '10', username: 'quinten', location: 'ams'});
-    })
+        console.trace(`id: ${id}`)
+        await findTargetById(id).then(t => {
+            res.json(t)
+        } ).catch(e => {
+            console.trace(`Something went wrong ${e}`)
+            next(createError(400, `Something went wrong.`))
+        })
+ })
 
-router.delete('/target/:id', async (req,
+
+/**
+ * Delete target by id.
+ * This means a full target container, not just a single target.
+ */
+router.delete('/:id', async (req,
                                     res,
                                     next) => {
     const id = req.params.id;
@@ -96,6 +126,10 @@ router.delete('/target/:id', async (req,
     //         console.trace("Sending delete message to rabbitMQ failed: " + err);
     //         next(new Error('Messaging failed'));
     //     });
+})
+
+router.get('/', async (req, res, next) => {
+    res.render('index', {title: 'target'})
 })
 
 module.exports = router;
