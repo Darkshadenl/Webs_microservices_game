@@ -63,7 +63,7 @@ services:
     container_name: TargetDatabase
     restart: on-failure
     ports:
-      - "3010:27017"
+      - "3013:27017"
       - "2001:27018"
     volumes:
       - ./volumes/TargetDatabase:/data/db
@@ -78,7 +78,7 @@ services:
     container_name: ScoreDatabase
     restart: on-failure
     ports:
-      - "3011:27017"
+      - "3012:27017"
       - "2002:27018"
     volumes:
       - ./volumes/ScoreDatabase:/data/db
