@@ -6,7 +6,7 @@ let targetUserSchema = new Mongoose.Schema({
         base64: {type: 'string'},
         location: {type: 'string'},
     }],
-})
+}, {timestamps: true})
 
 targetUserSchema.pre('save', async function () {
     // check if image already exists in database.

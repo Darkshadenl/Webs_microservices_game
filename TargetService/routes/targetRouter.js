@@ -20,7 +20,7 @@ router.post('/',
     targetUpload,
     async (req, res, next) => {
         const data = JSON.parse(req.body.target);
-        const image = req.files.base64[0]['buffer'];
+        const image = req.files.image[0]['buffer'];
         const {username, location} = data;
 
         if (!username || !location || !image) {

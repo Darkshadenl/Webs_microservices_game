@@ -1,4 +1,4 @@
-const repo = require('../repos/targetRepo');
+const repo = require('../repos/scoreRepo');
 
 class PayloadInterpreter {
 
