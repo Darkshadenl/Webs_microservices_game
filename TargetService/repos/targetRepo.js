@@ -27,35 +27,15 @@ async function saveUser(username) {
     }
 
 /**
-    *  Checks if a user exists in the database. If exists, returns the user object.
-    *  If not, returns false
-    *  @async
-    *  @param {string} username - The username to check
-    *  @returns {Promise<Object|boolean>} - Returns the user object if found, false if not found
+    *  Checks if a user exists in the database. If exists, returns the target object.
+ *  @async
     */
-async function userExists(username){
+async function findTargetByUsername(username){
     try {
         return await Target.findOne({username: username});
     } catch (e) {
         console.log(e);
     }
-}
-
-async function retrieveTarget(username){
-    return new Promise((resolve, reject) => {
-        Target.findOne({ username: username }).then((target) => {
-            if (target) {
-                resolve(target)
-            }
-            reject(false)
-        }).catch((e) => {
-            reject('Something went wrong. Error: ' + e)
-        });
-    })
-}
-
-async function findTargetByIndex(index){
-
 }
 
 async function deleteTarget(id) {
@@ -73,7 +53,16 @@ async function deleteTarget(id) {
 }
 
 
-async function saveUserTarget(user, target) {
+/**
+    *
+    *  Saves a user target
+    *  @param {Object} user - The user object
+    *  @param {Object} target - The target object
+    *  @param {String} target.image - The image of the target
+    *  @param {String} target.location - The location of the target
+    *  @returns {Promise} - A promise that resolves when the user target is saved
+    */
+    async function saveUserTarget(user, target) {
     const {image, location} = target;
 
     return new Promise((resolve, reject) => {
@@ -109,7 +98,7 @@ async function saveUserTarget(user, target) {
     // );
     // publisher(payload);
 
-}
+    }
 
 
 async function checkForExistingImage(image) {
@@ -126,10 +115,27 @@ async function checkForExistingImage(image) {
     })
 }
 
+async function findTargetById(id) {
+        try {
+            return await Target.findById(id)
+        } catch (e) {
+            console.trace(e);
+        }
+}
+
+async function findSingleTargetById(id) {
+        try {
+            return await Target.findOne({ 'targets._id': id })
+        } catch (e) {
+            console.trace(e);
+        }
+}
+
 module.exports = {
     deleteTarget,
-    userExists,
+    findTargetByUsername,
     saveUserTarget,
     saveUser,
-    retrieveTarget,
+    findTargetById,
+    findSingleTargetById
 }
