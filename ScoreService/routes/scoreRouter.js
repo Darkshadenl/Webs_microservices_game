@@ -1,7 +1,10 @@
 const express = require('express');
 const multer = require("multer");
+const imaggaConnect = require("../imagga/api");
 const router = express.Router();
 
+
+imaggaConnect();
 
 /*
  * Stap voor stap:

@@ -24,13 +24,14 @@ services:
       - "9001:9229"
     volumes:
       - "./TargetService:/opt/project/"
-      - "exclude:/opt/project/node_modules"
+      - "exclude_target:/opt/project/node_modules"
     environment:
       PORT: 3001
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
       ROUTING_KEY: "Target"
-    command: yarn run ${ENV}
+      # clear out the exclude volume's contents on every container start
+    command: sh startup.sh
     depends_on:
       - targetdatabase
     networks:
@@ -45,13 +46,15 @@ services:
       - "9002:9229"
     volumes:
       - "./ScoreService:/opt/project/"
-      - "exclude:/opt/project/node_modules"
+      - "exclude_score:/opt/project/node_modules"
     environment:
       PORT: 3002
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@ScoreDatabase:27017"
       ENV: ${ENV}
       ROUTING_KEY: "Score"
-    command: yarn run ${ENV}
+      IMAGGA_API_KEY: ${IMAGGA_API_KEY}
+      IMAGGA_API_SECRET: ${IMAGGA_API_SECRET}
+    command: sh startup.sh
     depends_on:
       - scoredatabase
     networks:
@@ -89,4 +92,5 @@ services:
       - ass_network
 
 volumes:
-  exclude:
+  exclude_target:
+  exclude_score:
