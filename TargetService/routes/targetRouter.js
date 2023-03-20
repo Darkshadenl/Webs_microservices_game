@@ -1,4 +1,4 @@
-const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetById, findSingleTargetById} = require('../repos/targetRepo')
+const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetById} = require('../repos/targetRepo')
 
 const express = require('express');
 const router = express.Router();
@@ -7,6 +7,7 @@ const {createPayload} = require("../payloadHandling/payloadCreator");
 const publisher = require("../rabbitMQ/publisher");
 const createError = require("http-errors");
 const multer = require('multer')
+const {binaryToBase64} = require("../tools/image");
 
 const upload = multer();
 
@@ -19,7 +20,7 @@ router.post('/',
     targetUpload,
     async (req, res, next) => {
         const data = JSON.parse(req.body.target);
-        const image = req.files.image[0]['buffer'];
+        const image = req.files.base64[0]['buffer'];
         const {username, location} = data;
 
         if (!username || !location || !image) {
@@ -30,14 +31,15 @@ router.post('/',
         let response = ""
 
         try {
+            const base64 = binaryToBase64(image);
             if (user !== null && user !== undefined) {
-                await saveUserTarget(user, {location, image})
+                await saveUserTarget(user, {location, base64})
                 response = "User already existed, target is saved to user."
             } else {
                 // User does not exist, create user and save target to user
                 await saveUser(username)
                     .then((user) => {
-                        saveUserTarget(user, {location, image})
+                        saveUserTarget(user, {location, base64})
                     })
                 response = "User did not exist, user was created and target is saved to user."
             }
@@ -56,10 +58,16 @@ router.get('/byUsername/:username',
     async (req, res, next) => {
         const index = req.query.index;
         const id = req.query.id;
+        let page = req.query.page || 1;
         const username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
 
+        page = parseInt(page);
+
+        const pageLimit = 10;
+        const offset = (page - 1) * pageLimit;
+
         if (!username || typeof username !== 'string') {
-            next(new Error(`Incorrect format. Username missing or not a string`));
+            next(new Error('Incorrect format'));
         }
 
         await findTargetByUsername(username).then(t => {
@@ -68,7 +76,7 @@ router.get('/byUsername/:username',
             } else if (id) {
                 res.json(t.targets.id(id))
             } else {
-                res.json(t.targets)
+                res.json(t.targets.slice(offset, offset + pageLimit));
             }
         }).catch(e => {
             next(createError(400, `Something went wrong.`))

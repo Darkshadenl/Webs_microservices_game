@@ -3,7 +3,8 @@ require('./mongooseConnection');
 var Rabbit = require('./rabbitMQ/Rabbit');
 
 const express= require('express');
-const router = require('./routes/index');
+const targetRouter = require('./routes/targetRouter');
+const testRouter = require('./routes/testRouter');
 const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -24,7 +25,8 @@ app.get('/', async (req, res, next) => {
     res.render('index', {title: 'index'})
 })
 
-app.use('/target', router);
+app.use('/target', targetRouter);
+app.use('/random', testRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req,
