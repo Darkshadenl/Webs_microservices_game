@@ -5,15 +5,15 @@ networks:
 
 services:
 
-  rabbit:
-    image: rabbitmq:3-management
-    container_name: rabbit
-    hostname: rabbit
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - ass_network
+#  rabbit:
+#    image: rabbitmq:3-management
+#    container_name: rabbit
+#    hostname: rabbit
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    networks:
+#      - ass_network
 
   targetservice:
     build:
@@ -24,7 +24,7 @@ services:
       - "9001:9229"
     volumes:
       - "./TargetService:/opt/project/"
-      - "exclude:/opt/project/node_modules"
+      - "/opt/project/node_modules"
     environment:
       PORT: 3001
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
@@ -45,7 +45,7 @@ services:
       - "9002:9229"
     volumes:
       - "./ScoreService:/opt/project/"
-      - "exclude:/opt/project/node_modules"
+      - "/opt/project/node_modules"
     environment:
       PORT: 3001
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@ScoreDatabase:27017"
@@ -57,6 +57,38 @@ services:
     networks:
       - ass_network
 
+  gatewayservice:
+    build:
+      context: ./ApiGateway/
+    container_name: GatewayService
+    ports:
+      - "3003:3001"
+    volumes:
+      - "./ApiGateway:/opt/project/"
+      - "./config:/opt/config"
+      - "/opt/project/node_modules"
+    environment:
+      PORT: 3001
+      ENV: ${ENV}
+    command: yarn run ${ENV}
+    networks:
+      - ass_network
+
+  authservice:
+    build:
+      context: ./AuthService/
+    container_name: AuthService
+    ports:
+      - "3004:3001"
+    volumes:
+      - "./AuthService:/opt/project/"
+      - "/opt/project/node_modules"
+    environment:
+      PORT: 3001
+      ENV: ${ENV}
+    command: yarn run ${ENV}
+    networks:
+      - ass_network
 
   targetdatabase:
     image: mongo:latest
@@ -88,5 +120,3 @@ services:
     networks:
       - ass_network
 
-volumes:
-  exclude:
