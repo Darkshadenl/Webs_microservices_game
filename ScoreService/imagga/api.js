@@ -1,20 +1,35 @@
 const got = require('got');
+const FormData = require('form-data');
 
 const apiKey = process.env.IMAGGA_API_KEY;
 const apiSecret = process.env.IMAGGA_API_SECRET;
 
-const imageUrl = 'https://imagga.com/static/images/tagging/wind-farm-538576_640.jpg';
-const url = 'https://api.imagga.com/v2/tags?image_url=' + encodeURIComponent(imageUrl);
+const API_ENDPOINT = 'https://api.imagga.com/v2';
+const CATEGORIZER = 'general_v3'; // The default general purpose categorizer
+const SIMILARITYENDPOINT = `${API_ENDPOINT}/images-similarity/categories/${CATEGORIZER}`;
 
-async function imaggaConnect() {
+async function imaggaSimCheck(imageBase64, imageBase264){
+    const formData = new FormData();
+    formData.append('image_base64', imageBase64);
+    formData.append('image2_base64', imageBase264);
+
+    const simCheckBody = {
+        body: formData,
+        username: apiKey,
+        password: apiSecret
+    };
+
     try {
-        const response = await got(url, {username: apiKey, password: apiSecret});
-        const p = JSON.parse(response.body);
-        console.log(p);
+        const res = await got.post(SIMILARITYENDPOINT, simCheckBody);
+        const response = JSON.parse(res.body);
+        console.log(response);
+        return response;
     } catch (error) {
-        console.log(error.response.body);
+        console.log('error');
+        console.log(error);
     }
 }
 
-module.exports = imaggaConnect;
-
+module.exports = {
+    imaggaUpload: imaggaSimCheck
+};

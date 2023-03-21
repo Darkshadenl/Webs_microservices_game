@@ -1,10 +1,9 @@
 const express = require('express');
 const multer = require("multer");
-const imaggaConnect = require("../imagga/api");
+const { imaggaUpload } = require("../imagga/api");
+const {binaryToBase64} = require("../tools/image");
+const createError = require("http-errors");
 const router = express.Router();
-
-
-imaggaConnect();
 
 /*
  * Stap voor stap:
@@ -26,16 +25,19 @@ imaggaConnect();
 
 const upload = multer();
 const scoreUpload = upload.fields([
-    {name: 'image', maxCount: 1},
+    {name: 'image', maxCount: 2},
     {name: 'target', maxCount: 1},
 ]);
-router.post('/:username',
+router.post('/',
     scoreUpload,
-    function (req, res, next) {
-        const scorerUsername = req.params.username;
+    async function (req, res, next) {
         const targetJson = JSON.parse(req.body.target);
-        const image = req.files.image[0];
-        console.log(targetJson);
+
+        const image = req.files.image[0]['buffer'];
+        const image2 = req.files.image[1]['buffer'];
+
+        const base64Image = binaryToBase64(image)
+        const base642Image = binaryToBase64(image2)
 
         const { username, targetId, targetIndex } = targetJson;
 
@@ -43,11 +45,15 @@ router.post('/:username',
             res.status(400).send('No username provided');
         } else {
             if (targetId) {
-                console.trace('targetId: ' + targetId)
+                console.log('targetId: ' + targetId)
 
-            } else if (targetIndex) {
-                // TODO optional idea
-                console.trace('targetIndex: ' + targetIndex)
+                const simCheckResult = await imaggaUpload(base64Image, base642Image).catch((error) => {
+                    console.log('error');
+                    return next(createError(400, 'Missing parameters'))
+                });
+
+                res.json(simCheckResult)
+
             } else {
                 res.status(400).send('No targetId or targetIndex provided');
             }

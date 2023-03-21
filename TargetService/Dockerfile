@@ -6,7 +6,6 @@ WORKDIR /opt/
 COPY ./package*.json ./
 
 RUN yarn --frozen-lockfile
-ENV PATH=/opt/node_modules/.bin:$PATH
 
 WORKDIR /opt/project/
 
