@@ -1,4 +1,4 @@
-const amqp = require('amqplib/callback_api');
+const amqp = require('amqplib');
 const uri = process.env.AMQP;
 const exchangeName = 'Main';
 const selfName = process.env.ROUTING_KEY || 'Undefined';
@@ -7,56 +7,38 @@ const props = { clientProperties: { connection_name: 'scoreConnection' }};
 
 // client
 async function sendTargetAMessage(message){
+    let connection;
+    const queue = 'rpc_queue';
+
     try {
-        amqp.connect(uri,  function (err, connection){
-            if (err) {
-                console.log("Error in rpc: ", err);
-                throw err;
-            }
-            console.log('sending a message')
+        connection = await amqp.connect(uri);
+        const channel = await connection.createChannel();
+        const correlationId = generateUuid();
 
-            connection.createChannel(function (err2, channel) {
-                if (err2) {
-                    throw err2;
+        const sendingAMessage = new Promise(async (resolve) => {
+            const { queue: replyTo } = await channel.assertQueue('', { exclusive: true });
+
+            await channel.consume(replyTo, (message) => {
+                if (!message) console.warn(' [x] Consumer cancelled');
+                else if (message.properties.correlationId === correlationId) {
+                    console.log(` [.] Got: ${message.content.toString()}`);
+                    resolve(message.content.toString());
                 }
+            }, { noAck: true });
 
-                const queue = 'rpc_queue';
-
-                channel.assertQueue(queue, {
-                    durable: false
-                }, (err, q) => {
-                    if (err) {
-                        console.log(`error in assertQueue: ${err}`);
-                        throw err;
-                    }
-
-                    let correlationId = generateUuid();
-
-                    console.log('uuid generated: ' + correlationId);
-
-                    channel.consume(q.queue, function (msg) {
-                        if (msg.properties.correlationId === correlationId) {
-                            console.log(' [.] Got %s', msg.content.toString());
-
-                            setTimeout(function () {
-                                connection.close();
-                                process.exit(0)
-                            }, 500);
-                        }
-                    }, {
-                        noAck: true
-                    });
-
-                    channel.sendToQueue(queue, Buffer.from('testmessage'), {
-                        correlationId: correlationId,
-                        replyTo: q.queue
-                    });
-                });
-
+            await channel.assertQueue(queue, { durable: false });
+            console.log(` [x] Requesting: ${message}`);
+            channel.sendToQueue(queue, Buffer.from(message), {
+                correlationId,
+                replyTo,
             });
         });
+
+        return await sendingAMessage;
     } catch (e) {
         console.log("Error in rpc: ", e);
+    } finally {
+        if (connection) await connection.close();
     }
 }
 

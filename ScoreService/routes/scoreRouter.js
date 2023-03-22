@@ -28,7 +28,7 @@ const router = express.Router();
 
 router.get('/rpc', async function (req, res, next) {
 
-    sendTargetAMessage('hi from route /rpc');
+    await sendTargetAMessage('hi from route /rpc');
 
     res.send('respond with a resource');
 });
