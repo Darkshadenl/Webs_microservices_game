@@ -4,7 +4,16 @@ const setupForReceivingRPC = require("./rabbitMQ/rpc");
 const RabbitMQ = require('./rabbitMQ/Rabbit');
 
 (async () => {
-    await setupForReceivingRPC()
+    let success = false;
+
+    while (!success) {
+        success = await setupForReceivingRPC();
+
+        if (!success) {
+            console.log('RabbitMQ not available yet, retrying in 5 seconds');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+    }
 })();
 
 const express= require('express');

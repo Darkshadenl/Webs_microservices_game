@@ -1,6 +1,4 @@
 const Target = require('../models/target');
-const publisher = require("../rabbitMQ/publisher");
-const {binaryToBase64} = require("../tools/image");
 
 /**
     *  Saves a user to the database
@@ -86,34 +84,6 @@ async function saveUserTarget(user, target) {
                 reject(e);
             })
     })
-
-    // const payload = createPayload(
-    //     'create',
-    //     `${answer.id}`,
-    //     "user",
-    //     {
-    //         uploadByUsername: answer.uploadByUsername,
-    //         base64: answer.base64,
-    //         location: answer.location
-    //     },
-    // );
-    // publisher(payload);
-
-    }
-
-
-async function checkForExistingImage(image) {
-    return new Promise((resolve, reject) => {
-        Target.findOne({ 'targets.base64': image })
-            .then((target) => {
-                if (target) {
-                    resolve(target)
-                }
-                reject(false)
-            }).catch((e) => {
-            reject('Something went wrong. Error: ' + e)
-        });
-    })
 }
 
 async function findTargetById(id) {
@@ -132,11 +102,24 @@ async function findSingleTargetById(id) {
         }
 }
 
+async function findImage(username, id) {
+    try {
+        return await findTargetByUsername(username).then((target) => {
+            if (target) {
+                return target.targets.id(id);
+            }
+        });
+    } catch (e) {
+        console.trace(e);
+    }
+}
+
 module.exports = {
     deleteTarget,
     findTargetByUsername,
     saveUserTarget,
     saveUser,
     findTargetById,
-    findSingleTargetById
+    findSingleTargetById,
+    findImage
 }

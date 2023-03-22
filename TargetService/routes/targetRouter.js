@@ -3,8 +3,6 @@ const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetB
 const express = require('express');
 const router = express.Router();
 
-const {createPayload} = require("../payloadHandling/payloadCreator");
-const publisher = require("../rabbitMQ/publisher");
 const createError = require("http-errors");
 const multer = require('multer')
 const {binaryToBase64} = require("../tools/image");
@@ -71,6 +69,8 @@ router.get('/byUsername/:username',
         }
 
         await findTargetByUsername(username).then(t => {
+            if (!t)
+                return next(createError(404, `User not found.`))
             if (index) {
                 res.json(t.targets[index])
             } else if (id) {

@@ -1,5 +1,5 @@
 const amqp = require('amqplib');
-const {response} = require("express");
+const PayloadInterpreter = require("../payloadHandling/payloadInterpreter");
 const uri = process.env.AMQP;
 
 // server
@@ -18,9 +18,20 @@ async function setupForReceivingRPC() {
         await channel.assertQueue(queue, { durable: false });
         await channel.prefetch(1); // only one message at a time
 
-        await channel.consume(queue, (message) => {
-            console.log(message.content.toString());
-            const reply = "Hello from target";
+        await channel.consume(queue, async (message) => {
+            const received = JSON.parse(message.content);
+            if (!received) {
+                console.log(' [.] Faulty message')
+                channel.ack(message);
+                return;
+            }
+
+            console.log(' [.] Received %s', received)
+
+            const interpreter = new PayloadInterpreter(received);
+            const interpretation = await interpreter.interpret();
+            console.log(interpretation)
+            let reply = interpretation.base64;
 
             channel.sendToQueue(message.properties.replyTo, Buffer.from(reply), {
                 correlationId: message.properties.correlationId
@@ -30,7 +41,10 @@ async function setupForReceivingRPC() {
 
     } catch (e) {
         console.warn("Error in rpc: ", e);
+        return false;
     }
+
+    return true;
 }
 
 module.exports = setupForReceivingRPC;
