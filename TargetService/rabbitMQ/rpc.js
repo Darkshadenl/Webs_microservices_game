@@ -30,8 +30,12 @@ async function setupForReceivingRPC() {
 
             const interpreter = new PayloadInterpreter(received);
             const interpretation = await interpreter.interpret();
-            console.log(interpretation)
-            let reply = interpretation.base64;
+            let reply = undefined;
+            if (!interpretation) {
+                reply = 'No image found'
+            } else {
+                reply = interpretation.base64;
+            }
 
             channel.sendToQueue(message.properties.replyTo, Buffer.from(reply), {
                 correlationId: message.properties.correlationId

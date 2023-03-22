@@ -42,9 +42,7 @@ router.post('/',
     scoreUpload,
     async function (req, res, next) {
         const targetJson = JSON.parse(req.body.target);
-
         const image = req.files.image[0]['buffer'];
-
         const base64Image = binaryToBase64(image)
 
         const {username, targetUsername, targetId} = targetJson;
