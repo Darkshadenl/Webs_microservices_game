@@ -1,6 +1,11 @@
 require('./mongooseConnection');
 
-var Rabbit = require('./rabbitMQ/Rabbit');
+const RabbitMQ = require('./rabbitMQ/Rabbit');
+let rpc = require('./rabbitMQ/rpc');
+
+(async () => {
+    await rpc();
+})();
 
 const express= require('express');
 const targetRouter = require('./routes/targetRouter');

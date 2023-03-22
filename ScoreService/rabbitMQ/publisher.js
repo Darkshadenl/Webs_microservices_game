@@ -1,16 +1,11 @@
 const Rabbit = require('./Rabbit');
 
-const rabbit = Rabbit;
 let channel = undefined;
 const exchangeName = 'Main';
 
 async function assertExchange() {
     try {
-        channel = await rabbit.getChannel();
-
         await channel.assertExchange(exchangeName, 'direct', { durable: true });
-        console.log(typeof channel);
-
     } catch (e) {
         console.log('Error: ' + e);
     }
@@ -25,4 +20,7 @@ const publish = async function (payload) {
     }
 }
 
-module.exports = publish;
+module.exports = {
+    publish,
+    assertExchange
+};

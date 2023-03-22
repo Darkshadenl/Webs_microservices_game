@@ -3,6 +3,9 @@ const multer = require("multer");
 const { imaggaUpload } = require("../imagga/api");
 const {binaryToBase64} = require("../tools/image");
 const createError = require("http-errors");
+const createPayload = require("../payloadHandling/payloadCreator");
+const publish = require("../rabbitMQ/publisher");
+const {sendTargetAMessage} = require("../rabbitMQ/rpc");
 const router = express.Router();
 
 /*
@@ -13,7 +16,7 @@ const router = express.Router();
  * Deze wordt naar scoreservice gestuurd.
  *
  * Scoreservice moet weten om welke target het gaat.
- * Hiervoor heeft ie een username nodig en een targetid/index van welke positie in de array van targets.
+ * Hiervoor heeft ie een username nodig en een targetid.
  *
  * Nu heb ik de target foto en de foto van de gebruiker.
  * Stuur die naar imagga.
@@ -22,6 +25,13 @@ const router = express.Router();
  * Hierbij vermeld ik ook de targetid/index van welke positie in de array van targets.
  *
  */
+
+router.get('/rpc', async function (req, res, next) {
+
+    sendTargetAMessage('hi from route /rpc');
+
+    res.send('respond with a resource');
+});
 
 const upload = multer();
 const scoreUpload = upload.fields([
@@ -39,27 +49,27 @@ router.post('/',
         const base64Image = binaryToBase64(image)
         const base642Image = binaryToBase64(image2)
 
-        const { username, targetId, targetIndex } = targetJson;
+        const {username, targetId} = targetJson;
 
-        if (!username) {
-            res.status(400).send('No username provided');
+        if (!username || !targetId) {
+            res.status(400).send('No username or targetid provided');
         } else {
-            if (targetId) {
-                console.log('targetId: ' + targetId)
+            console.log('targetId: ' + targetId)
 
-                const simCheckResult = await imaggaUpload(base64Image, base642Image).catch((error) => {
-                    console.log('error');
-                    return next(createError(400, 'Missing parameters'))
-                });
+            // retrieve image from targetservice.
+            const payload = await createPayload('get', targetId, 'image')
+            await publish(payload)
 
-                res.json(simCheckResult)
 
-            } else {
-                res.status(400).send('No targetId or targetIndex provided');
-            }
+            // now compare using imaga.
+            const simCheckResult = await imaggaUpload(base64Image, base642Image).catch((error) => {
+                console.log('error');
+                return next(createError(400, 'Missing parameters'))
+            });
+
+            res.json(simCheckResult)
         }
-
-        res.status(200).send('Score post works.');
-});
+})
+;
 
 module.exports = router;

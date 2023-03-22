@@ -1,7 +1,5 @@
 require('./mongooseConnection');
 
-var Rabbit = require('./rabbitMQ/Rabbit');
-
 const express= require('express');
 const router = require('./routes/indexRouter');
 const scorerouter = require('./routes/scoreRouter');

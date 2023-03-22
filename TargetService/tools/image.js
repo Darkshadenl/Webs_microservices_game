@@ -4,7 +4,7 @@
     *  @param {string} image - The binary string to convert
     *  @returns {string} - The base64 string
     */
-    function binaryToBase64(image) {
+function binaryToBase64(image) {
     const binaryData = Buffer.from(image, 'utf8');
     return binaryData.toString('base64');
     }

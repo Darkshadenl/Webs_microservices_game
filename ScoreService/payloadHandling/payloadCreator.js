@@ -44,8 +44,12 @@ async function validateDataValue(dataValue) {
     *  @param {string} dataValue - The value of the data
     *  @returns {Object} - The payload object
     */
-async function createPayload(action, id, fieldName, dataValue) {
-    await Promise.all([validateAction(action), validateId(id), validateFieldName(fieldName), validateDataValue(dataValue)])
+async function createPayload(action, id, fieldName, dataValue = "") {
+    await Promise.all([
+        validateAction(action),
+        validateId(id),
+        validateFieldName(fieldName),
+        validateDataValue(dataValue)])
         .then(() => {
             console.log("All validations passed");
 
