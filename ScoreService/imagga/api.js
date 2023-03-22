@@ -21,9 +21,7 @@ async function imaggaSimCheck(imageBase64, imageBase264){
 
     try {
         const res = await got.post(SIMILARITYENDPOINT, simCheckBody);
-        const response = JSON.parse(res.body);
-        console.log(response);
-        return response;
+        return JSON.parse(res.body);
     } catch (error) {
         console.log('error');
         console.log(error);
