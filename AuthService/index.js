@@ -8,7 +8,7 @@ const strategy = require('../config/passportStrategy');
 require('dotenv').config();
 
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 passport.use(strategy.InternalStrategy);

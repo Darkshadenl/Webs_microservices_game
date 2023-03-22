@@ -5,15 +5,15 @@ networks:
 
 services:
 
-#  rabbit:
-#    image: rabbitmq:3-management
-#    container_name: rabbit
-#    hostname: rabbit
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-#    networks:
-#      - ass_network
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ass_network
 
   targetservice:
     build:
@@ -70,7 +70,8 @@ services:
     environment:
       PORT: 3001
       ENV: ${ENV}
-    command: yarn run ${ENV}
+      AUTHURL:
+    command: sh startup.sh
     networks:
       - ass_network
 
@@ -82,11 +83,12 @@ services:
       - "3004:3001"
     volumes:
       - "./AuthService:/opt/project/"
+      - "./config:/opt/config"
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
       ENV: ${ENV}
-    command: yarn run ${ENV}
+    command: sh startup.sh
     networks:
       - ass_network
 
