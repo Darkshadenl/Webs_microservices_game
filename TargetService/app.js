@@ -1,10 +1,10 @@
 require('./mongooseConnection');
+const setupForReceivingRPC = require("./rabbitMQ/rpc");
 
 const RabbitMQ = require('./rabbitMQ/Rabbit');
-let rpc = require('./rabbitMQ/rpc');
 
 (async () => {
-    await rpc();
+    await setupForReceivingRPC()
 })();
 
 const express= require('express');

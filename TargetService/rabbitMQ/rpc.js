@@ -1,43 +1,35 @@
-const amqp = require('amqplib/callback_api');
+const amqp = require('amqplib');
+const {response} = require("express");
 const uri = process.env.AMQP;
 
 // server
 async function setupForReceivingRPC() {
+    const queue = 'rpc_queue';
+
     try {
-        amqp.connect(uri,  function (err, connection){
-            if (err) {
-                console.log("Error in rpc: ", err);
-                throw err;
-            }
+        const connection = await amqp.connect(uri);
+        const channel = await connection.createChannel();
 
-            connection.createChannel(function (err2, channel) {
-                if (err2) {
-                    throw err2;
-                }
-                const queue = 'rpc_queue';
+        process.once('SIGINT', async () => {
+            await channel.close();
+            await connection.close();
+        });
 
-                channel.assertQueue(queue, {
-                    durable: false
-                });
-                channel.prefetch(1);
-                console.log(' [x] Awaiting RPC requests');
+        await channel.assertQueue(queue, { durable: false });
+        await channel.prefetch(1); // only one message at a time
 
-                channel.consume(queue, function reply(msg) {
-                    console.log(msg.content.toString());
+        await channel.consume(queue, (message) => {
+            console.log(message.content.toString());
+            const reply = "Hello from target";
 
-                    const reply = "Hello from target";
-
-                    channel.sendToQueue(msg.properties.replyTo,
-                        Buffer.from(reply), {
-                            correlationId: msg.properties.correlationId
-                        });
-
-                    channel.ack(msg);
-                });
+            channel.sendToQueue(message.properties.replyTo, Buffer.from(reply), {
+                correlationId: message.properties.correlationId
             });
-        })
+            channel.ack(message);
+        });
+
     } catch (e) {
-        console.log("Error in rpc: ", e);
+        console.warn("Error in rpc: ", e);
     }
 }
 
