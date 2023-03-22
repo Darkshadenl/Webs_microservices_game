@@ -61,18 +61,14 @@ router.post('/',
 
             const payload = await createPayload('get', 'targets', payloadObject)
             const targetImage = await rpcMessage(payload);
-            console.log('targetImage: ');
-            console.log(targetImage);
-
 
             // now compare using imaga.
-            // const simCheckResult = await imaggaUpload(base64Image, base642Image).catch((error) => {
-            //     console.log('error');
-            //     return next(createError(400, 'Missing parameters'))
-            // });
+            const simCheckResult = await imaggaUpload(base64Image, targetImage).catch((error) => {
+                console.log('error');
+                return next(createError(400, 'Missing parameters'))
+            });
 
-            // res.json(simCheckResult)
-            res.json({msg: 'hi from route /'})
+            res.json(simCheckResult)
         }
 })
 ;

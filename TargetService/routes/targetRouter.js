@@ -13,7 +13,6 @@ const targetUpload = upload.fields([
     {name: 'image', maxCount: 1},
     {name: 'target', maxCount: 1}
 ]);
-
 router.post('/',
     targetUpload,
     async (req, res, next) => {
