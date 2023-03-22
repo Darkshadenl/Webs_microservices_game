@@ -23,7 +23,6 @@ async function rpcMessage(payload) {
             await channel.consume(replyTo, (message) => {
                 if (!message) console.warn(' [x] Consumer cancelled');
                 else if (message.properties.correlationId === correlationId) {
-                    console.log(` [.] Got: ${message.content.toString()}`);
                     resolve(message.content.toString());
                 }
             }, {noAck: true});

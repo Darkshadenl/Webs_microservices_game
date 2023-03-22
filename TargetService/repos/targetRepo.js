@@ -23,7 +23,7 @@ async function saveUser(username) {
                 reject(e);
             })
     })
-    }
+}
 
 
  /**

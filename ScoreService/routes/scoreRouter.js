@@ -6,6 +6,7 @@ const createError = require("http-errors");
 const createPayload = require("../payloadHandling/payloadCreator");
 const publish = require("../rabbitMQ/publisher");
 const {rpcMessage} = require("../rabbitMQ/rpc");
+const {buildScoreEntry, saveScore} = require("../repos/scoreRepo");
 const router = express.Router();
 
 /*
@@ -67,6 +68,12 @@ router.post('/',
                 console.log('error');
                 return next(createError(400, 'Missing parameters'))
             });
+
+            // save score in database.
+            const scoreEntry = buildScoreEntry(base64Image, targetJson, simCheckResult.result.distance);
+            console.log(scoreEntry)
+            const savedScore = await saveScore(scoreEntry);
+            console.log('savedScore: ' + savedScore);
 
             res.json(simCheckResult)
         }
