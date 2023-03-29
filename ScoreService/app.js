@@ -3,6 +3,7 @@ require('./mongooseConnection');
 const express= require('express');
 const router = require('./routes/indexRouter');
 const scorerouter = require('./routes/scoreRouter');
+const scoresRouter = require('./routes/scoresRouter');
 const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routing
 app.use('/', router);
 app.use('/score', scorerouter);
+app.use('/scores', scoresRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req,

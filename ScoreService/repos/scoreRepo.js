@@ -26,6 +26,7 @@ function buildScoreEntry(base64image, targetJSON, score) {
     }
 
 async function saveScore(scoreEntry){
+    console.info('Saving score entry: ', scoreEntry)
     return new Promise(async (resolve, reject) => {
         try {
             const existingScore = await Score.findOne({ username: scoreEntry.username });
@@ -62,7 +63,23 @@ async function saveScore(scoreEntry){
     });
 }
 
+async function getAllScores(username) {
+    try {
+        // Find the Score document with the given username
+        const userScores = await Score.findOne({ username: username });
+        if (userScores) {
+            return userScores.scored;
+        } else {
+            return [];
+        }
+    } catch (e) {
+        console.trace('Error retrieving scores');
+        throw e;
+    }
+}
+
 module.exports = {
     buildScoreEntry,
-    saveScore
+    saveScore,
+    getAllScores
 }

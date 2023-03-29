@@ -4,12 +4,11 @@ const { imaggaUpload } = require("../imagga/api");
 const {binaryToBase64} = require("../tools/image");
 const createError = require("http-errors");
 const createPayload = require("../payloadHandling/payloadCreator");
-const publish = require("../rabbitMQ/publisher");
 const {rpcMessage} = require("../rabbitMQ/rpc");
 const {buildScoreEntry, saveScore} = require("../repos/scoreRepo");
 const router = express.Router();
 
-/*
+/**
  * Stap voor stap:
  *
  * Een target is geupload naar targetservice.
@@ -26,13 +25,6 @@ const router = express.Router();
  * Hierbij vermeld ik ook de targetid/index van welke positie in de array van targets.
  *
  */
-
-router.get('/rpc', async function (req, res, next) {
-
-    const reply = await rpcMessage({msg: 'hi from route /rpc'});
-
-    res.send(reply);
-});
 
 const upload = multer();
 const scoreUpload = upload.fields([
@@ -83,11 +75,12 @@ router.post('/',
 
             // save score in database.
             const scoreEntry = buildScoreEntry(base64Image, targetJson, simCheckResult.result.distance);
-            console.log(scoreEntry)
-            const savedScore = await saveScore(scoreEntry);
-            console.log('savedScore: ' + savedScore);
+            await saveScore(scoreEntry);
 
             res.json({
+                "username": username,
+                "targetId": targetId,
+                "targetUsername": targetUsername,
                 "difference between images": simCheckResult.result.distance
             })
         }

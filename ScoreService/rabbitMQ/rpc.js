@@ -37,7 +37,11 @@ async function rpcMessage(payload) {
             });
         });
 
-        return await sendingAMessage;
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), 5 * 1000)
+        );
+
+        return await Promise.race([sendingAMessage, timeoutPromise]);
     } catch (e) {
         console.trace("Error in rpc", e);
     } finally {
