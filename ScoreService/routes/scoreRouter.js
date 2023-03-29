@@ -63,6 +63,8 @@ router.post('/',
             const payload = await createPayload('get', 'targets', payloadObject)
             const targetImage = await rpcMessage(payload);
 
+            console.log('targetImage: ' + targetImage)
+
             if (!targetImage) {
                 console.info('targetImage not found', targetImage)
                 return next(createError(400, 'Something went wrong'))
@@ -70,12 +72,12 @@ router.post('/',
 
             // now compare using imaga.
             const simCheckResult = await imaggaUpload(base64Image, targetImage).catch((error) => {
-                console.log('error');
-                return next(createError(400, 'Missing parameters'))
+                console.error('imaggeUpload error: ', error);
+                return next(createError(400, error))
             });
 
             if (!simCheckResult) {
-                console.info('simCheckResult not found', simCheckResult)
+                console.error('simCheckResult not found', simCheckResult)
                 return next(createError(400, 'Something went wrong'))
             }
 
@@ -85,7 +87,9 @@ router.post('/',
             const savedScore = await saveScore(scoreEntry);
             console.log('savedScore: ' + savedScore);
 
-            res.json(simCheckResult)
+            res.json({
+                "difference between images": simCheckResult.result.distance
+            })
         }
 })
 ;

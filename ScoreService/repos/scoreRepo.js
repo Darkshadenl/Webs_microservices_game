@@ -26,22 +26,40 @@ function buildScoreEntry(base64image, targetJSON, score) {
     }
 
 async function saveScore(scoreEntry){
-    const s = new Score({
-        username: scoreEntry.username,
-        scored: scoreEntry.scored
-    });
-    return new Promise((resolve, reject) => {
-        s.save()
-            .then(savedValue => {
-                if (savedValue) {
-                    resolve(savedValue)
+    return new Promise(async (resolve, reject) => {
+        try {
+            const existingScore = await Score.findOne({ username: scoreEntry.username });
+
+            // If the username exists, check for duplicate base64 strings
+            if (existingScore) {
+                const existingBase64 = existingScore.scored.find(
+                    (score) => score.base64 === scoreEntry.scored.base64
+                );
+
+                // If the base64 string already exists, resolve with scoreEntry.scored
+                if (existingBase64) {
+                    resolve(existingScore);
+                } else {
+                    // If the base64 string doesn't exist, push the new score entry and save the document
+                    existingScore.scored.push(scoreEntry.scored);
+                    const updatedScore = await existingScore.save();
+                    resolve(updatedScore);
                 }
-            })
-            .catch(e => {
-                console.trace('Saving failed')
-                reject(e);
-            })
-    })
+            } else {
+                // If the username does not exist, create a new document
+                const s = new Score({
+                    username: scoreEntry.username,
+                    scored: scoreEntry.scored,
+                });
+
+                const savedValue = await s.save();
+                resolve(savedValue);
+            }
+        } catch (e) {
+            console.trace('Saving failed');
+            reject(e);
+        }
+    });
 }
 
 module.exports = {

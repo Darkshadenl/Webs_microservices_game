@@ -12,6 +12,8 @@ async function rpcMessage(payload) {
     let connection;
     const queue = 'rpc_queue';
 
+    console.info('sending payload', payload)
+
     try {
         connection = await amqp.connect(uri);
         const channel = await connection.createChannel();
@@ -37,7 +39,7 @@ async function rpcMessage(payload) {
 
         return await sendingAMessage;
     } catch (e) {
-        console.log("Error in rpc: ", e);
+        console.trace("Error in rpc", e);
     } finally {
         if (connection)
             await connection.close();

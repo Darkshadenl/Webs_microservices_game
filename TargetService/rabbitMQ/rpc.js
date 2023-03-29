@@ -27,10 +27,11 @@ async function setupForReceivingRPC() {
             }
 
             console.log(' [.] Received %s', received)
+            console.info(' [.] Body', received.body)
 
             const interpreter = new PayloadInterpreter(received);
             const interpretation = await interpreter.interpret();
-            let reply = undefined;
+            let reply;
             if (!interpretation) {
                 reply = 'No image found'
             } else {
