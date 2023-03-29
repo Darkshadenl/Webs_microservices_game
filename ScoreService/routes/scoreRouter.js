@@ -63,11 +63,21 @@ router.post('/',
             const payload = await createPayload('get', 'targets', payloadObject)
             const targetImage = await rpcMessage(payload);
 
+            if (!targetImage) {
+                console.info('targetImage not found', targetImage)
+                return next(createError(400, 'Something went wrong'))
+            }
+
             // now compare using imaga.
             const simCheckResult = await imaggaUpload(base64Image, targetImage).catch((error) => {
                 console.log('error');
                 return next(createError(400, 'Missing parameters'))
             });
+
+            if (!simCheckResult) {
+                console.info('simCheckResult not found', simCheckResult)
+                return next(createError(400, 'Something went wrong'))
+            }
 
             // save score in database.
             const scoreEntry = buildScoreEntry(base64Image, targetJson, simCheckResult.result.distance);
