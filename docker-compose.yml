@@ -69,8 +69,10 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
-      ENV: ${ENV}
-      AUTHURL:
+      ENV: dev
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${secret_api_key}
+      AUTHURL: ${AUTHURL}
     command: sh startup.sh
     networks:
       - ass_network
@@ -87,8 +89,28 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
-      ENV: ${ENV}
+      ENV: dev
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${secret_api_key}
+      AUTHURL: ${AUTHURL}
+      MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@AuthDatabase:27017"
     command: sh startup.sh
+    networks:
+      - ass_network
+
+
+  authdatabase:
+    image: mongo:latest
+    container_name: AuthDatabase
+    restart: on-failure
+    ports:
+      - "3014:27017"
+      - "2003:27018"
+    volumes:
+      - ./volumes/AuthDatabase:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DBUSER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DBPASSWORD}
     networks:
       - ass_network
 
