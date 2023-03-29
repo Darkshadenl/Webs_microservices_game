@@ -1,8 +1,6 @@
 require('./mongooseConnection');
 const setupForReceivingRPC = require("./rabbitMQ/rpc");
 
-const RabbitMQ = require('./rabbitMQ/Rabbit');
-
 (async () => {
     let success = false;
 
@@ -12,6 +10,8 @@ const RabbitMQ = require('./rabbitMQ/Rabbit');
         if (!success) {
             console.log('RabbitMQ not available yet, retrying in 5 seconds');
             await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+            console.log('RabbitMQ is ready');
         }
     }
 })();
