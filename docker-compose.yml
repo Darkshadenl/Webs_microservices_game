@@ -69,9 +69,9 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
-      ENV: dev
+      ENV: ${ENV}
       JWT_SECRET: ${JWT_SECRET}
-      API_KEY: ${secret_api_key}
+      API_KEY: ${API_KEY}
       AUTHURL: ${AUTHURL}
     command: sh startup.sh
     networks:
@@ -89,9 +89,9 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3004
-      ENV: dev
+      ENV: ${ENV}
       JWT_SECRET: ${JWT_SECRET}
-      API_KEY: ${secret_api_key}
+      API_KEY: ${API_KEY}
       AUTHURL: ${AUTHURL}
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@AuthDatabase:27017"
     command: sh startup.sh

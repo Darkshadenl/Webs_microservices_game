@@ -6,4 +6,4 @@ echo 'Running startup.sh'
 
 rm -rf ./node_modules/*
 
-yarn run "${ENV_VAR}"
+yarn run dev
