@@ -4,6 +4,7 @@ const passport = require('passport');
 const axios = require('axios');
 const authService    =  process.env.AUTHURL || 'http://localhost:3000/'
 
+
 //passport
 {
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -26,8 +27,9 @@ passport.use(strategy);
 router.use(passport.initialize());
 }
 
+console.log(authService)
 const circuitBreaker = require('../helpers/circuitBreaker')
-    .createNewCircuitBreaker(process.env.AUTHURL);
+    .createNewCircuitBreaker(authService);
 
 
 function send(method, path) {
@@ -46,7 +48,7 @@ function send(method, path) {
 
 router.post('/register',send('post','register'));
 router.post('/login',send('post','login'));
-router.get('/test',send('get','test'));
+router.get('/test', send('get','test'));
 router.get('/welcome', passport.authenticate('jwt', { session: false }), send('get','welcome'));
 
 

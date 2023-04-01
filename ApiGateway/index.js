@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3010;
+const port = process.env.PORT || 3003;
 const cors = require('cors');
 const strategy = require('../config/passportStrategy');
 const passport = require('passport');
@@ -22,7 +22,9 @@ axios.interceptors.request.use(interceptor);
 //
 // // Register imported routes
 app.use('/auth', require('./routes/auths'));
-
+app.get('/test',(req, res) => {
+    res.send('test');
+} )
 
 app.listen(port, () => {
     console.log('Gateway is up on http://localhost:' + port);

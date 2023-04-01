@@ -26,7 +26,7 @@ router.post('/get-user-id', passport.authenticate('jwt', { session: false }), (r
 router.get('/welcome',(req, res) => {
     res.send('Welcome');
 } )
-router.get('/test',(req, res) => {
+router.get('/test',passport.authenticate('jwt', { session: false }),(req, res) => {
     res.send('test');
 } )
 

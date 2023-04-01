@@ -82,13 +82,13 @@ services:
       context: ./AuthService/
     container_name: AuthService
     ports:
-      - "3004:3001"
+      - "3004:3004"
     volumes:
       - "./AuthService:/opt/project/"
       - "./config:/opt/config"
       - "/opt/project/node_modules"
     environment:
-      PORT: 3001
+      PORT: 3004
       ENV: dev
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${secret_api_key}
