@@ -26,7 +26,13 @@ function buildScoreEntry(base64image, targetJSON, score) {
     }
 
 async function saveScore(scoreEntry){
-    console.info('Saving score entry: ', scoreEntry)
+    console.info('Saving score entry: ', {
+        username: scoreEntry.username,
+        image: scoreEntry.scored.base64.substring(0, 20),
+        targetUsername: scoreEntry.scored.targetUsername,
+        targetId: scoreEntry.scored.targetId,
+        score: scoreEntry.scored.score
+    })
     return new Promise(async (resolve, reject) => {
         try {
             const existingScore = await Score.findOne({ username: scoreEntry.username });

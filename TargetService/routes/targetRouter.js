@@ -6,6 +6,7 @@ const router = express.Router();
 const createError = require("http-errors");
 const multer = require('multer')
 const {binaryToBase64} = require("../tools/image");
+const paginate = require("../middleware/pagination");
 
 const upload = multer();
 
@@ -51,17 +52,13 @@ router.post('/',
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
  */
-router.get('/byUsername/:username',
+router.get('/byUsername/:username', paginate,
     async (req, res, next) => {
+        const { startIndex, endIndex } = res.pagination;
+        let paginatedData;
         const index = req.query.index;
         const id = req.query.id;
-        let page = req.query.page || 1;
         const username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
-
-        page = parseInt(page);
-
-        const pageLimit = 10;
-        const offset = (page - 1) * pageLimit;
 
         if (!username || typeof username !== 'string') {
             next(new Error('Incorrect format'));
@@ -75,7 +72,17 @@ router.get('/byUsername/:username',
             } else if (id) {
                 res.json(t.targets.id(id))
             } else {
-                res.json(t.targets.slice(offset, offset + pageLimit));
+                paginatedData = t.slice(startIndex, endIndex);
+                console.log(startIndex, endIndex)
+                res.json({
+                    pagination: {
+                        totalItems: t.length,
+                        currentPage: req.query.page || 1,
+                        totalPages: Math.ceil(t.length / res.pagination.limit),
+                        items: paginatedData,
+                    },
+                    data: t
+                });
             }
         }).catch(e => {
             next(createError(400, `Something went wrong.`))
@@ -126,13 +133,6 @@ router.delete('/:id', async (req,
     }).catch(err => {
         console.trace(`Deleting target ${id} failed: ${err}`);
     });
-     // TODO fix payload
-    // const payloadCreator = createPayload('delete', `${id}`, "user", {});
-    // await publisher(payloadCreator.getPayload())
-    //     .catch(err => {
-    //         console.trace("Sending delete message to rabbitMQ failed: " + err);
-    //         next(new Error('Messaging failed'));
-    //     });
 })
 
 router.get('/', async (req, res, next) => {

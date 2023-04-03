@@ -55,7 +55,7 @@ router.post('/',
             const payload = await createPayload('get', 'targets', payloadObject)
             const targetImage = await rpcMessage(payload);
 
-            console.log('targetImage: ' + targetImage)
+            console.log('targetImage: ' + targetImage.substring(0, 20))
 
             if (!targetImage) {
                 console.info('targetImage not found', targetImage)
