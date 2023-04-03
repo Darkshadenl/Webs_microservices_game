@@ -11,7 +11,7 @@ services:
     hostname: rabbit
     ports:
       - "5672:5672"
-      - "15672:15672"
+      - "8080:15672"
     networks:
       - ass_network
 
@@ -28,6 +28,7 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
+      AMQP: amqp://rabbit
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
       JWT_SECRET: ${JWT_SECRET}
@@ -51,11 +52,15 @@ services:
       - "/opt/project/node_modules"
     environment:
       PORT: 3002
+      PORT: 3002
+      AMQP: amqp://rabbit
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@ScoreDatabase:27017"
       ENV: ${ENV}
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       ROUTING_KEY: "Score"
+      IMAGGA_API_KEY: ${IMAGGA_API_KEY}
+      IMAGGA_API_SECRET: ${IMAGGA_API_SECRET}
     command: sh startup.sh
     depends_on:
       - scoredatabase
@@ -151,3 +156,5 @@ services:
     networks:
       - ass_network
 
+volumes:
+  exclude:

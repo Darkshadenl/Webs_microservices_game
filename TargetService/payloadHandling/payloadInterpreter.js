@@ -1,16 +1,14 @@
-const repo = require('../repos/targetRepo');
+const {findImage} = require("../repos/targetRepo");
 
 class PayloadInterpreter {
 
     constructor(payload) {
         this.payload = payload;
-        this.repo = repo;
     }
 
     async interpret() {
-        await this.#action().then(() => {
-            console.log('Payload interpreted');
-            return('interpret message from broker was succesfully processed');
+        return await this.#action().then((result) => {
+            return(result);
         }).catch(err => {
             console.log(err);
             throw err;
@@ -19,13 +17,18 @@ class PayloadInterpreter {
 
     async #action() {
         try {
-            if (this.payload.action == "delete") {
+            if (this.payload.action === "delete") {
                 let value = this.payload.value.id
-                await this.repo.delete(value);
-                return;
+                return 'deleted';
             }
-            if (this.payload.action == "create") {
+            if (this.payload.action === "create") {
                 console.log('create');
+                return "created";
+            }
+            if (this.payload.action === "get") {
+                const username = this.payload.body.dataValue.targetUsername;
+                const imageId = this.payload.body.dataValue.targetId;
+                return await findImage(username, imageId);
             }
         } catch (e) {
             throw 'Throwed: error occurred in service check of private method #action in post service';

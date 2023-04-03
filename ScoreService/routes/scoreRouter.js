@@ -1,0 +1,90 @@
+const express = require('express');
+const multer = require("multer");
+const { imaggaUpload } = require("../imagga/api");
+const {binaryToBase64} = require("../tools/image");
+const createError = require("http-errors");
+const createPayload = require("../payloadHandling/payloadCreator");
+const {rpcMessage} = require("../rabbitMQ/rpc");
+const {buildScoreEntry, saveScore} = require("../repos/scoreRepo");
+const router = express.Router();
+
+/**
+ * Stap voor stap:
+ *
+ * Een target is geupload naar targetservice.
+ * Iemand schiet een foto in om in de buurt te komen van een target.
+ * Deze wordt naar scoreservice gestuurd.
+ *
+ * Scoreservice moet weten om welke target het gaat.
+ * Hiervoor heeft ie een username nodig en een targetid.
+ *
+ * Nu heb ik de target foto en de foto van de gebruiker.
+ * Stuur die naar imagga.
+ *
+ * Nu kan ik de score opslaan in de database bij de gebruiker.
+ * Hierbij vermeld ik ook de targetid/index van welke positie in de array van targets.
+ *
+ */
+
+const upload = multer();
+const scoreUpload = upload.fields([
+    {name: 'image', maxCount: 1},
+    {name: 'target', maxCount: 1},
+]);
+router.post('/',
+    scoreUpload,
+    async function (req, res, next) {
+        const targetJson = JSON.parse(req.body.target);
+        const image = req.files.image[0]['buffer'];
+        const base64Image = binaryToBase64(image)
+
+        const {username, targetUsername, targetId} = targetJson;
+
+        if (!username || !targetId || !targetUsername) {
+            return next(createError(400, 'Invalid data provided'))
+        } else {
+            console.log('targetId: ' + targetId)
+
+            // retrieve image from targetservice.
+            const payloadObject = {
+                "fromService": "score",
+                "targetUsername": targetUsername,
+                "targetId": targetId,
+            }
+
+            const payload = await createPayload('get', 'targets', payloadObject)
+            const targetImage = await rpcMessage(payload);
+
+            console.log('targetImage: ' + targetImage.substring(0, 20))
+
+            if (!targetImage) {
+                console.info('targetImage not found', targetImage)
+                return next(createError(400, 'Something went wrong'))
+            }
+
+            // now compare using imaga.
+            const simCheckResult = await imaggaUpload(base64Image, targetImage).catch((error) => {
+                console.error('imaggeUpload error: ', error);
+                return next(createError(400, error))
+            });
+
+            if (!simCheckResult) {
+                console.error('simCheckResult not found', simCheckResult)
+                return next(createError(400, 'Something went wrong'))
+            }
+
+            // save score in database.
+            const scoreEntry = buildScoreEntry(base64Image, targetJson, simCheckResult.result.distance);
+            await saveScore(scoreEntry);
+
+            res.json({
+                "username": username,
+                "targetId": targetId,
+                "targetUsername": targetUsername,
+                "difference between images": simCheckResult.result.distance
+            })
+        }
+})
+;
+
+module.exports = router;

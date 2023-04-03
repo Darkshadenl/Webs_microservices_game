@@ -1,9 +1,24 @@
 require('./mongooseConnection');
+const setupForReceivingRPC = require("./rabbitMQ/rpc");
 
-var Rabbit = require('./rabbitMQ/Rabbit');
+(async () => {
+    let success = false;
+
+    while (!success) {
+        success = await setupForReceivingRPC();
+
+        if (!success) {
+            console.log('RabbitMQ not available yet, retrying in 5 seconds');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+            console.log('RabbitMQ is ready');
+        }
+    }
+})();
 
 const express= require('express');
-const router = require('./routes/index');
+const targetRouter = require('./routes/targetRouter');
+const testRouter = require('./routes/testRouter');
 const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -28,11 +43,16 @@ app.use(passport.initialize());
 
 
 // Routing
-app.use('/', router);
-//test gateway
+app.get('/', async (req, res, next) => {
+    res.render('index', {title: 'index'})
+})
+
 app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.send('test');
 } )
+
+app.use('/target', targetRouter);
+app.use('/random', testRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req,

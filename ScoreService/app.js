@@ -1,9 +1,9 @@
 require('./mongooseConnection');
 
-var Rabbit = require('./rabbitMQ/Rabbit');
-
 const express= require('express');
-const router = require('./routes/index');
+const router = require('./routes/indexRouter');
+const scorerouter = require('./routes/scoreRouter');
+const scoresRouter = require('./routes/scoresRouter');
 const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -29,6 +29,8 @@ app.use(passport.initialize());
 
 // Routing
 app.use('/',passport.authenticate('jwt', {session: false}), router);
+app.use('/score', scorerouter);
+app.use('/scores', scoresRouter);
 
 app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.send('test');
