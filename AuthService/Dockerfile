@@ -13,5 +13,3 @@ WORKDIR /opt/project/
 COPY . .
 
 CMD ["yarn", "run", "dev"]
-
-
