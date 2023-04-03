@@ -24,13 +24,16 @@ services:
       - "9001:9229"
     volumes:
       - "./TargetService:/opt/project/"
+      - "./config:/opt/config"
       - "/opt/project/node_modules"
     environment:
       PORT: 3001
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@TargetDatabase:27017"
       ENV: ${ENV}
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
       ROUTING_KEY: "Target"
-    command: yarn run ${ENV}
+    command: sh startup.sh
     depends_on:
       - targetdatabase
     networks:
@@ -75,6 +78,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       AUTHURL: ${AUTHURL}
+      TARGETURL: ${TARGETURL}
       SCOREURL: ${SCOREURL}
     command: sh startup.sh
     networks:

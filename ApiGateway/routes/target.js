@@ -4,7 +4,7 @@ const passport = require('passport');
 const axios = require('axios');
 const {Strategy: JwtStrategy} = require("passport-jwt");
 const {options: jwtOptions} = require("../../config/passportStrategy");
-const scoreService    =  process.env.SCOREURL || 'http://localhost:3000/'
+const scoreService    =  process.env.TARGETURL || 'http://localhost:3000/'
 
 
 //passport
@@ -50,7 +50,6 @@ function send(method, path) {
 }
 
 router.get('/test', send('get','test'));
-router.get('/', send('get',''));
 
 
 

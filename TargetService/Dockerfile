@@ -1,15 +1,17 @@
-FROM node:17-alpine3.14
+FROM node:18-alpine3.14
 
 RUN yarn global add nodemon
 
-WORKDIR /opt/project
+WORKDIR /opt/
 
 COPY ./package*.json ./
 
 RUN yarn
 
+WORKDIR /opt/project/
+
 COPY . .
 
-EXPOSE 3001
 CMD ["yarn", "run", "dev"]
+
 

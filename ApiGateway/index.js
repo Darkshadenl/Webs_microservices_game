@@ -24,6 +24,7 @@ axios.interceptors.request.use(interceptor);
 
 app.use('/auth', require('./routes/auths'));
 app.use('/score', passport.authenticate('jwt', {session: false}),  require('./routes/score'));
+app.use('/target', passport.authenticate('jwt', {session: false}),  require('./routes/target'));
 app.get('/test',(req, res) => {
     res.send('test');
 } )
