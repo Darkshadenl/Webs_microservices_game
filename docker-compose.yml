@@ -41,17 +41,19 @@ services:
       context: ./ScoreService/
     container_name: ScoreService
     ports:
-      - "3002:3001"
-      - "9002:9229"
+      - "3002:3002"
     volumes:
       - "./ScoreService:/opt/project/"
+      - "./config:/opt/config"
       - "/opt/project/node_modules"
     environment:
-      PORT: 3001
+      PORT: 3002
       MONGO_URL: "mongodb://${DBUSER}:${DBPASSWORD}@ScoreDatabase:27017"
       ENV: ${ENV}
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
       ROUTING_KEY: "Score"
-    command: yarn run ${ENV}
+    command: sh startup.sh
     depends_on:
       - scoredatabase
     networks:
@@ -73,6 +75,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       AUTHURL: ${AUTHURL}
+      SCOREURL: ${SCOREURL}
     command: sh startup.sh
     networks:
       - ass_network

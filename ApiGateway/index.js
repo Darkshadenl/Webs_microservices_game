@@ -21,7 +21,9 @@ const { default: axios } = require('axios');
 axios.interceptors.request.use(interceptor);
 //
 // // Register imported routes
+
 app.use('/auth', require('./routes/auths'));
+app.use('/score', passport.authenticate('jwt', {session: false}),  require('./routes/score'));
 app.get('/test',(req, res) => {
     res.send('test');
 } )
