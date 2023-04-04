@@ -37,6 +37,7 @@ class CircuitBreakerService {
         );
     }
 
+
     // Helper function to add a trailing slash to an endpoint if it doesn't exist
     formatWithSlashes(endpoint) {
         return (endpoint.endsWith('/')) ? endpoint : `${endpoint}/`;

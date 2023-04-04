@@ -3,53 +3,20 @@ const router = new express.Router();
 const passport = require('passport');
 const axios = require('axios');
 const authService    =  process.env.AUTHURL || 'http://localhost:3000/'
+const messageSender = require('../helpers/messageSender')
 
-
-//passport
-{
-const JwtStrategy = require('passport-jwt').Strategy;
-const jwtOptions = require('../../config/passportStrategy').options
-
-const strategy = new JwtStrategy(jwtOptions, (jwt_payload, done) => {
-    // Check if JWT contains user uid
-    console.log("payload = " + jwt_payload)
-    if (jwt_payload.id !== undefined) {
-        console.log("jwt defined")
-
-        return done(null, jwt_payload);
-    }
-    console.log("jwt undefined")
-    return done(null, false);
-});
-
+const strategy = require('../helpers/PasportStrategy')
 
 passport.use(strategy);
 router.use(passport.initialize());
-}
 
-console.log(authService)
 const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(authService);
 
-
-function send(method, path) {
-    return (req, res, next) => {
-        circuitBreaker.fire(method, path || req.url, req.body, req.user)
-            .then(  response => {
-                res.status(response.status).json(response.data)
-            })
-            .catch(error => {
-                if (error.response) {
-                    res.status(error.response.status).send(error);
-                }
-            });
-    }
-}
-
-router.post('/register',send('post','register'));
-router.post('/login',send('post','login'));
-router.get('/test', send('get','test'));
-router.get('/welcome', passport.authenticate('jwt', { session: false }), send('get','welcome'));
+router.post('/register', messageSender(circuitBreaker,'post','register'));
+router.post('/login',messageSender(circuitBreaker,'post','login'));
+router.get('/test', messageSender(circuitBreaker, 'get','test'));
+router.get('/welcome', passport.authenticate('jwt', { session: false }), messageSender(circuitBreaker,'get','welcome'));
 
 
 
