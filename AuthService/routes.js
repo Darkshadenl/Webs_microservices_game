@@ -37,6 +37,7 @@ router.post('/register', (req, res) => {
     const user = new User({
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, salt),
+        role: req.body.role,
         salt: salt,
         isOwner: req.body.isOwner,
     });
@@ -59,7 +60,6 @@ router.post('/login', async function (req, res, next) {
         if (user) {
             const checkPassword = await bcrypt.compare(req.body.password, user.password)
             if(checkPassword){
-                console.log("user logging in")
                 const token = createOpaqueToken(user._id);
                 res.status(201).json({
                     user: user,
@@ -87,6 +87,7 @@ router.post('/login', async function (req, res, next) {
 function createOpaqueToken (userId) {
     return jwt.sign({
         id: userId,
+        role:'admin'
     }, process.env.JWT_SECRET);
 }
 
