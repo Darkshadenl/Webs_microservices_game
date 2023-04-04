@@ -6,6 +6,7 @@ const {Strategy: JwtStrategy} = require("passport-jwt");
 const {options: jwtOptions} = require("../../config/passportStrategy");
 const scoreService    =  process.env.SCOREURL || 'http://localhost:3000/'
 const messageSender = require('../helpers/messageSender')
+const roles = require('../helpers/authorizationRole');
 
 const strategy = require('../helpers/PasportStrategy')
 
@@ -16,22 +17,7 @@ const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(scoreService);
 
 
-function send(method, path) {
-    return (req, res, next) => {
-        circuitBreaker.fire(method, path || req.url, req.body, req.user)
-            .then(  response => {
-                res.status(response.status).json(response.data)
-            })
-            .catch(error => {
-                res.send(error)
-                if (error.response) {
-                    res.status(error.response.status).send(error);
-                }
-            });
-    }
-}
-
-router.get('/test', messageSender(circuitBreaker,'get','test'));
+router.get('/test',roles('admin'), messageSender(circuitBreaker,'get','test'));
 router.get('/', messageSender(circuitBreaker,'get',''));
 
 

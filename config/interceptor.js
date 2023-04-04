@@ -11,6 +11,7 @@ const interceptor = function (request) {
         const token = jwt.sign({ api }, process.env.JWT_SECRET);
         request.headers.Authorization = `Bearer ${token}`;
     }
+
     return request;
 };
 
