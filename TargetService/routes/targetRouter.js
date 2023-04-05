@@ -57,7 +57,11 @@ router.get('/all', paginate, async (req, res, next) => {
     const {startIndex, endIndex} = res.pagination;
     let paginatedData;
 
-    await getAllTargets().then(t => {
+    // Get the location query parameter
+    const locationFilter = req.query.location;
+    const filter = locationFilter ? { 'targets.location': locationFilter } : {};
+
+    await getAllTargets(filter).then(t => {
         if (!t)
             return next(createError(404, `User not found.`))
 
