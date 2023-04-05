@@ -1,4 +1,4 @@
-const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetById} = require('../repos/targetRepo')
+const {deleteTarget, saveUser, findTargetByUsername, saveUserTarget, findTargetById, getAllTargets} = require('../repos/targetRepo')
 
 const express = require('express');
 const router = express.Router();
@@ -7,6 +7,7 @@ const createError = require("http-errors");
 const multer = require('multer')
 const {binaryToBase64} = require("../tools/image");
 const paginate = require("../middleware/pagination");
+const removeFields = require("../tools/object_cleaner");
 
 const upload = multer();
 
@@ -49,6 +50,43 @@ router.post('/',
     })
 
 /**
+ * Get all targets by all users
+ * Use pagination
+ */
+router.get('/all', paginate, async (req, res, next) => {
+    const {startIndex, endIndex} = res.pagination;
+    let paginatedData;
+
+    await getAllTargets().then(t => {
+        if (!t)
+            return next(createError(404, `User not found.`))
+
+        let data = []
+        for (const target of t) {
+            const plainObject = target.toObject();
+            removeFields(plainObject, ['_id', '__v', 'createdAt', 'updatedAt'])
+
+            for (const subTarget of plainObject.targets) {
+                removeFields(subTarget, ['_id']);
+            }
+
+            data.push(plainObject)
+        }
+        paginatedData = data.slice(startIndex, endIndex);
+        res.json({
+            pagination: {
+                totalItems: t.length,
+                currentPage: req.query.page || 1,
+                totalPages: Math.ceil(t.length / res.pagination.limit),
+            },
+            data: paginatedData
+        });
+    }).catch(e => {
+        next(createError(400, `Something went wrong.`))
+    })
+})
+
+/**
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
  */
@@ -79,9 +117,8 @@ router.get('/byUsername/:username', paginate,
                         totalItems: t.length,
                         currentPage: req.query.page || 1,
                         totalPages: Math.ceil(t.length / res.pagination.limit),
-                        items: paginatedData,
                     },
-                    data: t
+                    data: paginatedData
                 });
             }
         }).catch(e => {
@@ -110,6 +147,8 @@ router.get('/:id',
             next(createError(400, `Something went wrong.`))
         })
  })
+
+
 
 
 /**

@@ -114,6 +114,14 @@ async function findImage(username, id) {
     }
 }
 
+async function getAllTargets() {
+    try {
+        return await Target.find();
+    } catch (e) {
+        console.trace(e);
+    }
+}
+
 module.exports = {
     deleteTarget,
     findTargetByUsername,
@@ -121,5 +129,6 @@ module.exports = {
     saveUser,
     findTargetById,
     findSingleTargetById,
-    findImage
+    findImage,
+    getAllTargets
 }
