@@ -14,16 +14,19 @@ function buildScoreEntry(base64image, targetJSON, score) {
     if (base64image === undefined || targetUsername === undefined || targetId === undefined)
         throw new Error('Missing parameters');
 
+    const achieved = score > 0.05 && score < 0.3
+
     return {
         username: username,
         scored: {
             base64: base64image,
             targetUsername: targetUsername,
             targetId: targetId,
-            score: score
+            score: score,
+            achieved: achieved
         }
     }
-    }
+}
 
 async function saveScore(scoreEntry){
     console.info('Saving score entry: ', {

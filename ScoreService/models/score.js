@@ -7,7 +7,8 @@ let scoreSchema = new Mongoose.Schema({
             base64: {type: 'string'},
             targetUsername: {type: 'string'},
             targetId: {type: Mongoose.Schema.Types.ObjectId},
-            score: {type: 'string'}
+            score: {type: 'string'},
+            achieved: {type: 'boolean'},
         }
     ],
 }, {timestamps: true});
