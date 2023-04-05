@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require("multer");
 const { imaggaUpload } = require("../imagga/api");
 const {binaryToBase64} = require("../tools/image");
 const createError = require("http-errors");
@@ -26,19 +25,10 @@ const router = express.Router();
  *
  */
 
-const upload = multer();
-const scoreUpload = upload.fields([
-    {name: 'image', maxCount: 1},
-    {name: 'target', maxCount: 1},
-]);
 router.post('/',
-    scoreUpload,
     async function (req, res, next) {
-        const targetJson = JSON.parse(req.body.target);
-        const image = req.files.image[0]['buffer'];
-        const base64Image = binaryToBase64(image)
-
-        const {username, targetUsername, targetId} = targetJson;
+        const targetJson = req.body;
+        const {username, targetUsername, targetId, base64} = targetJson;
 
         if (!username || !targetId || !targetUsername) {
             return next(createError(400, 'Invalid data provided'))
@@ -63,7 +53,7 @@ router.post('/',
             }
 
             // now compare using imaga.
-            const simCheckResult = await imaggaUpload(base64Image, targetImage).catch((error) => {
+            const simCheckResult = await imaggaUpload(base64, targetImage).catch((error) => {
                 console.error('imaggeUpload error: ', error);
                 return next(createError(400, error))
             });
@@ -74,7 +64,7 @@ router.post('/',
             }
 
             // save score in database.
-            const scoreEntry = buildScoreEntry(base64Image, targetJson, simCheckResult.result.distance);
+            const scoreEntry = buildScoreEntry(base64, targetJson, simCheckResult.result.distance);
             await saveScore(scoreEntry);
 
             res.json({
@@ -84,7 +74,6 @@ router.post('/',
                 "difference between images": simCheckResult.result.distance
             })
         }
-})
-;
+});
 
 module.exports = router;
