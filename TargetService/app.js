@@ -51,8 +51,8 @@ app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.send('test');
 } )
 
-app.use('/target', targetRouter);
-app.use('/random', testRouter);
+app.use('/target', passport.authenticate('jwt', {session: false}), targetRouter);
+app.use('/random', passport.authenticate('jwt', {session: false}), testRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req,

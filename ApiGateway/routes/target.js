@@ -16,6 +16,12 @@ const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(targetService);
 
 router.get('/test', messageSender(circuitBreaker, 'get', 'test'));
+router.get('/all', messageSender(circuitBreaker, 'get', 'target'));
+router.get('/byUsername/:username', messageSender(circuitBreaker, 'get', 'target'));
+router.get('/:id', messageSender(circuitBreaker, 'get', 'target'));
+router.get('/', messageSender(circuitBreaker, 'get', 'target'));
+router.delete('/:id', messageSender(circuitBreaker, 'delete', 'target'));
+router.post('', messageSender(circuitBreaker,'post','target'))
 
 
 
