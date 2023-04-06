@@ -1,7 +1,6 @@
 const express = require('express');
 const router = new express.Router();
 const passport = require('passport');
-const axios = require('axios');
 const authService    =  process.env.AUTHURL || 'http://localhost:3000/'
 const messageSender = require('../helpers/messageSender')
 
