@@ -48,6 +48,7 @@ app.get('/', async (req, res, next) => {
 })
 
 app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
+    console.log(req.user)
     res.send('test');
 } )
 
