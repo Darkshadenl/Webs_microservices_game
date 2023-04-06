@@ -1,12 +1,10 @@
 function send(circuitBreaker, method, basePath = '', path = undefined) {
-    return (req, res, next) => {
+    return (req, res) => {
         if (path === undefined){
-            console.log(req.url);
             path = req.url;
         }
-        console.log('path: ', path);
+        console.log(`path: ${path}`)
         const fullPath = basePath + path;
-        console.log('fullPath: ', fullPath)
         circuitBreaker.fire(method, fullPath, req.body, req.user)
             .then(  response => {
                 res.status(response.status).json(response.data)

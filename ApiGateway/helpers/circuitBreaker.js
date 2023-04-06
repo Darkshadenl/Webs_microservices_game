@@ -23,7 +23,7 @@ class CircuitBreakerService {
         return new CircuitBreaker(
             (method, resource, body, user) => {
 
-                console.log(`resource ${resource}`)
+                console.info(`resource:`, `${endpoint}${resource}`)
 
                 if (user) {
                     return axiosInstance[method](resource, body, {

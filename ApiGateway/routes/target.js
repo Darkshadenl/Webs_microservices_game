@@ -1,9 +1,6 @@
 const express = require('express');
 const router = new express.Router();
 const passport = require('passport');
-const axios = require('axios');
-const {Strategy: JwtStrategy} = require("passport-jwt");
-const {options: jwtOptions} = require("../../config/passportStrategy");
 const targetService    =  process.env.TARGETURL || 'http://localhost:3000/'
 const messageSender = require('../helpers/messageSender')
 
@@ -22,7 +19,6 @@ router.get('/:id', messageSender(circuitBreaker, 'get', 'target'));
 router.get('/', messageSender(circuitBreaker, 'get', 'target'));
 router.delete('/:id', messageSender(circuitBreaker, 'delete', 'target'));
 router.post('', messageSender(circuitBreaker,'post','target'))
-
 
 
 module.exports = router
