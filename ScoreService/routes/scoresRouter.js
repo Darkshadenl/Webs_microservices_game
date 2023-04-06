@@ -3,7 +3,9 @@ const paginate = require('../middleware/pagination');
 const {getAllScores} = require("../repos/scoreRepo");
 const router = express.Router();
 
-router.get('/getAllScores/:username', paginate, (req, res, next) => {
+router.get('/getAllScores/:username', paginate,
+    (req,
+     res, next) => {
     const { startIndex, endIndex } = res.pagination;
     let paginatedData;
     const username = req.params.username;

@@ -4,25 +4,17 @@ const express = require('express');
 const router = express.Router();
 
 const createError = require("http-errors");
-const multer = require('multer')
-const {binaryToBase64} = require("../tools/image");
 const paginate = require("../middleware/pagination");
 const removeFields = require("../tools/object_cleaner");
 
-const upload = multer();
-
-const targetUpload = upload.fields([
-    {name: 'image', maxCount: 1},
-    {name: 'target', maxCount: 1}
-]);
 router.post('/',
-    targetUpload,
-    async (req, res, next) => {
-        const data = JSON.parse(req.body.target);
-        const image = req.files.image[0]['buffer'];
-        const {username, location} = data;
+    async (req,
+           res,
+           next) => {
+        const data = req.body;
+        const {username, location, base64} = data;
 
-        if (!username || !location || !image) {
+        if (!username || !location || !base64) {
             return next(createError(400, 'Missing parameters'))
         }
 
@@ -30,7 +22,6 @@ router.post('/',
         let response = ""
 
         try {
-            const base64 = binaryToBase64(image);
             if (user !== null && user !== undefined) {
                 await saveUserTarget(user, {location, base64})
                 response = "User already existed, target is saved to user."

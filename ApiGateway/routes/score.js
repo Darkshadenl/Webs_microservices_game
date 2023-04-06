@@ -1,7 +1,6 @@
 const express = require('express');
 const router = new express.Router();
 const passport = require('passport');
-const axios = require('axios');
 const {Strategy: JwtStrategy} = require("passport-jwt");
 const {options: jwtOptions} = require("../../config/passportStrategy");
 const scoreService    =  process.env.SCOREURL || 'http://localhost:3000/'
@@ -17,9 +16,13 @@ const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(scoreService);
 
 
-router.get('/test',roles('admin'), messageSender(circuitBreaker,'get','test'));
-router.get('/', messageSender(circuitBreaker,'get',''));
+router.get('/test',roles('admin'), messageSender(circuitBreaker,'get'));
+router.get('/', messageSender(circuitBreaker,'get'));
 router.post('', messageSender(circuitBreaker,'post','score'))
+router.get('/getAllScores/:username',
+    messageSender(circuitBreaker, 'get', 'scores'));
+
+
 
 const upload = multer({
     storage: multer.memoryStorage(),
