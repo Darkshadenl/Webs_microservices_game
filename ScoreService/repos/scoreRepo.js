@@ -1,4 +1,4 @@
-const Score = require('../models/score');
+const { Score, TargetScore} = require('../models/score');
 
 /**
     *
@@ -87,8 +87,21 @@ async function getAllScores(username) {
     }
 }
 
+async function getScoresByTargetUsername(targetUsername) {
+    const targetScore = await TargetScore.findOne({ targetUsername });
+
+    if (!targetScore) {
+        console.log(`No scores found for target username: ${targetUsername}`);
+        return null;
+    }
+
+    return targetScore.scores;
+}
+
+
 module.exports = {
     buildScoreEntry,
     saveScore,
-    getAllScores
+    getAllScores,
+    getScoresByTargetUsername
 }

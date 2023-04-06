@@ -13,6 +13,42 @@ let scoreSchema = new Mongoose.Schema({
     ],
 }, {timestamps: true});
 
-const Score = Mongoose.model('Score', scoreSchema);
+let targetScoreSchema = new Mongoose.Schema({
+    targetUsername: {type: 'string', required: true, unique: true},
+    scores: [
+        {
+            username: {type: 'string'},
+            score: {type: 'string'},
+            achieved: {type: 'boolean'},
+        }
+    ],
+}, {timestamps: true});
 
-module.exports = Score;
+scoreSchema.pre('save', async function (next) {
+    const targetScores = this.scored.map(score => ({
+        targetUsername: score.targetUsername,
+        username: this.username,
+        score: score.score,
+        achieved: score.achieved
+    }));
+
+    await Promise.all(
+        targetScores.map(async (targetScore) => {
+            const target = await TargetScore.findOneAndUpdate(
+                { targetUsername: targetScore.targetUsername },
+                { $push: { scores: targetScore } },
+                { upsert: true, new: true }
+            );
+        })
+    );
+
+    next();
+});
+
+const Score = Mongoose.model('Score', scoreSchema);
+const TargetScore = Mongoose.model('TargetScore', targetScoreSchema);
+
+module.exports = {
+    Score,
+    TargetScore
+};

@@ -4,25 +4,17 @@ const express = require('express');
 const router = express.Router();
 
 const createError = require("http-errors");
-const multer = require('multer')
-const {binaryToBase64} = require("../tools/image");
 const paginate = require("../middleware/pagination");
 const removeFields = require("../tools/object_cleaner");
 
-const upload = multer();
-
-const targetUpload = upload.fields([
-    {name: 'image', maxCount: 1},
-    {name: 'target', maxCount: 1}
-]);
 router.post('/',
-    targetUpload,
-    async (req, res, next) => {
-        const data = JSON.parse(req.body.target);
-        const image = req.files.image[0]['buffer'];
-        const {username, location} = data;
+    async (req,
+           res,
+           next) => {
+        const data = req.body;
+        const {username, location, base64} = data;
 
-        if (!username || !location || !image) {
+        if (!username || !location || !base64) {
             return next(createError(400, 'Missing parameters'))
         }
 
@@ -30,7 +22,6 @@ router.post('/',
         let response = ""
 
         try {
-            const base64 = binaryToBase64(image);
             if (user !== null && user !== undefined) {
                 await saveUserTarget(user, {location, base64})
                 response = "User already existed, target is saved to user."
@@ -57,7 +48,6 @@ router.get('/all', paginate, async (req, res, next) => {
     const {startIndex, endIndex} = res.pagination;
     let paginatedData;
 
-    // Get the location query parameter
     const locationFilter = req.query.location;
     const filter = locationFilter ? { 'targets.location': locationFilter } : {};
 
@@ -69,6 +59,10 @@ router.get('/all', paginate, async (req, res, next) => {
         for (const target of t) {
             const plainObject = target.toObject();
             removeFields(plainObject, ['_id', '__v', 'createdAt', 'updatedAt'])
+
+            if (locationFilter) {
+                plainObject.targets = plainObject.targets.filter(subTarget => subTarget.location === locationFilter);
+            }
 
             for (const subTarget of plainObject.targets) {
                 removeFields(subTarget, ['_id']);
@@ -86,6 +80,7 @@ router.get('/all', paginate, async (req, res, next) => {
             data: paginatedData
         });
     }).catch(e => {
+        console.error(e)
         next(createError(400, `Something went wrong.`))
     })
 })
@@ -93,14 +88,20 @@ router.get('/all', paginate, async (req, res, next) => {
 /**
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
+ *
+ * TODO niet meer testen
  */
-router.get('/byUsername/:username', paginate,
-    async (req, res, next) => {
-        const { startIndex, endIndex } = res.pagination;
-        let paginatedData;
-        const index = req.query.index;
-        const id = req.query.id;
-        const username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
+router.get('/byUsername/:username',
+    async (req,
+           res, next) => {
+        let index, id, username;
+        try {
+            index = req.query.index;
+            id = req.query.id;
+            username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
+        } catch (e) {
+            console.log(e)
+        }
 
         if (!username || typeof username !== 'string') {
             next(new Error('Incorrect format'));
@@ -114,22 +115,15 @@ router.get('/byUsername/:username', paginate,
             } else if (id) {
                 res.json(t.targets.id(id))
             } else {
-                paginatedData = t.slice(startIndex, endIndex);
-                console.log(startIndex, endIndex)
                 res.json({
-                    pagination: {
-                        totalItems: t.length,
-                        currentPage: req.query.page || 1,
-                        totalPages: Math.ceil(t.length / res.pagination.limit),
-                    },
-                    data: paginatedData
+                    data: t
                 });
             }
         }).catch(e => {
+            console.log(e)
             next(createError(400, `Something went wrong.`))
         })
-
-    })
+})
 
 /**
  * Get a full target. This means a full target container, not just a single target.
@@ -143,11 +137,10 @@ router.get('/:id',
             next(new Error('Incorrect format. _id is missing.'));
         }
 
-        console.trace(`id: ${id}`)
         await findTargetById(id).then(t => {
             res.json(t)
         } ).catch(e => {
-            console.trace(`Something went wrong ${e}`)
+            console.error(`Something went wrong ${e}`)
             next(createError(400, `Something went wrong.`))
         })
  })
@@ -178,7 +171,7 @@ router.delete('/:id', async (req,
     });
 })
 
-router.get('/', async (req, res, next) => {
+router.get('/', async (req, res) => {
     res.render('index', {title: 'target'})
 })
 
