@@ -1,6 +1,6 @@
 const express = require('express');
 const paginate = require('../middleware/pagination');
-const {getAllScores} = require("../repos/scoreRepo");
+const {getAllScores, getScoresByTargetUsername} = require("../repos/scoreRepo");
 const router = express.Router();
 
 router.get('/getAllScores/:username', paginate,
@@ -9,24 +9,67 @@ router.get('/getAllScores/:username', paginate,
     const { startIndex, endIndex } = res.pagination;
     let paginatedData;
     const username = req.params.username;
+    const { targetUsername } = req.query;
 
-    getAllScores(username).then(
-        (result) => {
-            paginatedData = result.slice(startIndex, endIndex);
-            res.json({
-                pagination: {
-                    totalItems: result.length,
-                    currentPage: req.query.page || 1,
-                    totalPages: Math.ceil(result.length / res.pagination.limit),
-                    items: paginatedData,
-                },
-                data: result
-            });
-        }
-    ).catch(e => {
-        console.info('error: ', e)
-        return next(new Error('Something went wrong'))
-    });
+    if (targetUsername) {
+        getScoresByTargetUsername(username).then(
+            (result) => {
+                if (!result) {
+                    return res.json({
+                        pagination: {
+                            totalItems: 0,
+                            currentPage: req.query.page || 1,
+                            totalPages: 0,
+                            items: [],
+                        },
+                        data: []
+                    });
+                }
+                paginatedData = result.slice(startIndex, endIndex);
+                res.json({
+                    pagination: {
+                        totalItems: result.length,
+                        currentPage: req.query.page || 1,
+                        totalPages: Math.ceil(result.length / res.pagination.limit),
+                        items: paginatedData,
+                    },
+                    data: result
+                });
+            }
+        ).catch(e => {
+            console.info('error: ', e)
+            return next(new Error('Something went wrong'))
+        });
+    } else {
+        getAllScores(username).then(
+            (result) => {
+                if (!result) {
+                    return res.json({
+                        pagination: {
+                            totalItems: 0,
+                            currentPage: req.query.page || 1,
+                            totalPages: 0,
+                            items: [],
+                        },
+                        data: []
+                    });
+                }
+                paginatedData = result.slice(startIndex, endIndex);
+                res.json({
+                    pagination: {
+                        totalItems: result.length,
+                        currentPage: req.query.page || 1,
+                        totalPages: Math.ceil(result.length / res.pagination.limit),
+                        items: paginatedData,
+                    },
+                    data: result
+                });
+            }
+        ).catch(e => {
+            console.info('error: ', e)
+            return next(new Error('Something went wrong'))
+        });
+    }
 });
 
 module.exports = router;
