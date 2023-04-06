@@ -1,4 +1,4 @@
-const Score = require('../models/score');
+const { Score, TargetScore} = require('../models/score');
 
 /**
     *

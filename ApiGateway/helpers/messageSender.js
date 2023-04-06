@@ -1,9 +1,11 @@
 function send(circuitBreaker, method, basePath = '', path = undefined) {
-    return (req, res) => {
+    return  (req, res, next) => {
+        console.log(`path1 ${path}`)
         if (path === undefined){
             path = req.url;
         }
-        console.log(`path: ${path}`)
+        console.log(`path2: ${path}`)
+        console.log(`req url: ${req.url}`)
         const fullPath = basePath + path;
         circuitBreaker.fire(method, fullPath, req.body, req.user)
             .then(  response => {
@@ -14,7 +16,10 @@ function send(circuitBreaker, method, basePath = '', path = undefined) {
                     res.status(error.response.status).send(error);
                 }
             });
+        path = undefined;
     }
 }
 
-module.exports = send
+module.exports = {
+    send
+}

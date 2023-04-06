@@ -48,7 +48,6 @@ router.get('/all', paginate, async (req, res, next) => {
     const {startIndex, endIndex} = res.pagination;
     let paginatedData;
 
-    // Get the location query parameter
     const locationFilter = req.query.location;
     const filter = locationFilter ? { 'targets.location': locationFilter } : {};
 
@@ -60,6 +59,10 @@ router.get('/all', paginate, async (req, res, next) => {
         for (const target of t) {
             const plainObject = target.toObject();
             removeFields(plainObject, ['_id', '__v', 'createdAt', 'updatedAt'])
+
+            if (locationFilter) {
+                plainObject.targets = plainObject.targets.filter(subTarget => subTarget.location === locationFilter);
+            }
 
             for (const subTarget of plainObject.targets) {
                 removeFields(subTarget, ['_id']);
@@ -85,6 +88,8 @@ router.get('/all', paginate, async (req, res, next) => {
 /**
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
+ *
+ * TODO niet meer testen
  */
 router.get('/byUsername/:username',
     async (req,

@@ -2,48 +2,49 @@ const { default: axios } = require('axios');
 const CircuitBreaker = require('opossum');
 const Interceptor = require('../../config/interceptor');
 
-class CircuitBreakerService {
-    options = {
-        timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
-        errorThresholdPercentage: 50, // When 50% of requests fail, trip the circuit
-        resetTimeout: 3000 // After 3 seconds, try again.
-    };
 
-    createNewCircuitBreaker(endpoint) {
-        console.log(`endpoint ${endpoint}`)
-        const axiosInstance = axios.create({
-            baseURL: this.formatWithSlashes(endpoint),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+options = {
+    timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
+    errorThresholdPercentage: 50, // When 50% of requests fail, trip the circuit
+    resetTimeout: 3000 // After 3 seconds, try again.
+};
 
-         axiosInstance.interceptors.request.use(Interceptor);
+function createNewCircuitBreaker(endpoint) {
+    const axiosInstance = axios.create({
+        baseURL: formatWithSlashes(endpoint),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
 
-        return new CircuitBreaker(
-            (method, resource, body, user) => {
+    axiosInstance.interceptors.request.use(Interceptor);
 
-                console.info(`resource:`, `${endpoint}${resource}`)
+    return new CircuitBreaker(
+        (method, resource, body, user) => {
 
-                if (user) {
-                    return axiosInstance[method](resource, body, {
-                        headers: {
-                            'UserId': user._id
-                        }
-                    });
+            console.info(`resource:`, `${endpoint}${resource}`)
+
+            // Create a new instance of axios for each request
+            const axiosInstance = axios.create({
+                baseURL: formatWithSlashes(endpoint),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'UserId': user ? user._id : undefined
                 }
+            });
 
-                return axiosInstance[method](resource, body);
-            },
-            this.options
-        );
-    }
+            axiosInstance.interceptors.request.use(Interceptor);
 
-
-    // Helper function to add a trailing slash to an endpoint if it doesn't exist
-    formatWithSlashes(endpoint) {
-        return (endpoint.endsWith('/')) ? endpoint : `${endpoint}/`;
-    }
+            return axiosInstance[method](resource, body);
+        },
+        this.options
+    );
 }
 
-module.exports = new CircuitBreakerService();
+
+// Helper function to add a trailing slash to an endpoint if it doesn't exist
+function formatWithSlashes(endpoint) {
+    return (endpoint.endsWith('/')) ? endpoint : `${endpoint}/`;
+}
+
+module.exports = { formatWithSlashes, createNewCircuitBreaker }

@@ -1,6 +1,5 @@
 const express = require('express');
 const { imaggaUpload } = require("../imagga/api");
-const {binaryToBase64} = require("../tools/image");
 const createError = require("http-errors");
 const createPayload = require("../payloadHandling/payloadCreator");
 const {rpcMessage} = require("../rabbitMQ/rpc");
