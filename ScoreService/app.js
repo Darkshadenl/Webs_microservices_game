@@ -27,9 +27,9 @@ passport.use(strategy.InternalStrategy);
 app.use(passport.initialize());
 
 // Routing
-app.use('/',passport.authenticate('jwt', {session: false}), router);
-app.use('/score', scorerouter);
-app.use('/scores', scoresRouter);
+app.use('/', passport.authenticate('jwt', {session: false}), router);
+app.use('/score', passport.authenticate('jwt', {session: false}), scorerouter);
+app.use('/scores', passport.authenticate('jwt', {session: false}), scoresRouter);
 
 app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.send('test');

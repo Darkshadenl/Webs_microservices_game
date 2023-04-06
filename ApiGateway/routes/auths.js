@@ -13,10 +13,10 @@ const { createNewCircuitBreaker } = require('../helpers/circuitBreaker')
 
 const circuitBreaker = createNewCircuitBreaker(authService);
 
-router.post('/register', messageSender(circuitBreaker,'post','register'));
-router.post('/login',messageSender(circuitBreaker,'post','login'));
-router.get('/test', messageSender(circuitBreaker, 'get','test'));
-router.get('/welcome', passport.authenticate('jwt', { session: false }), messageSender(circuitBreaker,'get','welcome'));
+router.post('/register', messageSender(circuitBreaker,'post',''));
+router.post('/login',messageSender(circuitBreaker,'post',''));
+router.get('/test', messageSender(circuitBreaker, 'get',''));
+router.get('/welcome', passport.authenticate('jwt', { session: false }), messageSender(circuitBreaker,'get',''));
 
 
 

@@ -22,7 +22,7 @@ router.get('/', messageSender(circuitBreaker,'get'));
 router.post('', messageSender(circuitBreaker,'post','score'))
 router.get('/getAllScores/:username',
     messageSender(circuitBreaker, 'get', 'scores'));
-
+router.get('/getMyScores', messageSender(circuitBreaker, 'get', 'scores'));
 
 const upload = multer({
     storage: multer.memoryStorage(),

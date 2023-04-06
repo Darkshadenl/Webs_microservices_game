@@ -1,6 +1,6 @@
 const { default: axios } = require('axios');
 const CircuitBreaker = require('opossum');
-const Interceptor = require('../../config/interceptor');
+const {interceptor, InterceptorError} = require('../../config/interceptor');
 
 
 options = {
@@ -17,23 +17,25 @@ function createNewCircuitBreaker(endpoint) {
         }
     });
 
-    axiosInstance.interceptors.request.use(Interceptor);
+    axiosInstance.interceptors.request.use(interceptor, InterceptorError);
 
     return new CircuitBreaker(
         (method, resource, body, user) => {
 
             console.info(`resource:`, `${endpoint}${resource}`)
+            console.info(`circuit user:`, user)
 
             // Create a new instance of axios for each request
             const axiosInstance = axios.create({
                 baseURL: formatWithSlashes(endpoint),
                 headers: {
                     'Content-Type': 'application/json',
-                    'UserId': user ? user._id : undefined
+                    'UserId': user ? user.id : undefined,
+                    'Role': user ? user.role : undefined,
                 }
             });
 
-            axiosInstance.interceptors.request.use(Interceptor);
+            axiosInstance.interceptors.request.use(interceptor, InterceptorError);
 
             return axiosInstance[method](resource, body);
         },
