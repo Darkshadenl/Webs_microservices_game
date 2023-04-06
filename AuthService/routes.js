@@ -13,20 +13,16 @@ const strategy = require('passport-jwt').Strategy;
 const User = require('./models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const roles = require('../config/authorizationRole');
 
 // Passport setup
 passport.use(strategy);
 router.use(passport.initialize());
 
-router.post('/get-user-id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    res.status(200).json(req.user);
-});
-
-
 router.get('/welcome',(req, res) => {
     res.send('Welcome');
 } )
-router.get('/test',passport.authenticate('jwt', { session: false }),(req, res) => {
+router.get('/admin',passport.authenticate('jwt', { session: false }), roles('admin'),(req, res) => {
     res.send('test');
 } )
 
@@ -60,7 +56,7 @@ router.post('/login', async function (req, res, next) {
         if (user) {
             const checkPassword = await bcrypt.compare(req.body.password, user.password)
             if(checkPassword){
-                const token = createOpaqueToken(user._id);
+                const token = createOpaqueToken(user);
                 res.status(201).json({
                     user: user,
                     token: token
@@ -84,10 +80,10 @@ router.post('/login', async function (req, res, next) {
 })
 
 
-function createOpaqueToken (userId) {
+function createOpaqueToken (user) {
     return jwt.sign({
-        id: userId,
-        role:'admin'
+        id: user.id,
+        role: user.role
     }, process.env.JWT_SECRET);
 }
 

@@ -2,7 +2,6 @@ const { default: axios } = require('axios');
 const CircuitBreaker = require('opossum');
 const {interceptor, InterceptorError} = require('../../config/interceptor');
 
-
 options = {
     timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
     errorThresholdPercentage: 50, // When 50% of requests fail, trip the circuit
@@ -27,7 +26,7 @@ function createNewCircuitBreaker(endpoint) {
                 headers: {
                     'Content-Type': 'application/json',
                     'UserId': user ? user.id : undefined,
-                    'Role': user ? user.role : undefined,
+                    'RoleId': user ? user.role : undefined,
                 }
             });
 

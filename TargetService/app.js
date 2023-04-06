@@ -26,6 +26,7 @@ const logger = require('morgan');
 const app = express();
 const passport = require('passport');
 const strategy = require('../config/passportStrategy');
+const roles = require('../config/authorizationRole');
 
 
 // view engine setup
@@ -47,7 +48,7 @@ app.get('/', async (req, res, next) => {
     res.render('index', {title: 'index'})
 })
 
-app.get('/test', passport.authenticate('jwt', {session: false}), (req, res) => {
+app.get('/test', passport.authenticate('jwt', {session: false}),roles("admin"), (req, res) => {
     console.log(req.user)
     res.send('test');
 } )
