@@ -21,10 +21,6 @@ function createNewCircuitBreaker(endpoint) {
 
     return new CircuitBreaker(
         (method, resource, body, user) => {
-
-            console.info(`resource:`, `${endpoint}${resource}`)
-            console.info(`circuit user:`, user)
-
             // Create a new instance of axios for each request
             const axiosInstance = axios.create({
                 baseURL: formatWithSlashes(endpoint),
