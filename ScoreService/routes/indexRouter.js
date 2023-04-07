@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', function (req, res, next) {
-    res.render('index', {title: 'Scoreservice'});
+    res.status(200).send('ScoreService is running');
 });
 
 module.exports = router;

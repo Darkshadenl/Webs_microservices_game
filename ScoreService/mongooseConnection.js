@@ -4,8 +4,8 @@ const url = process.env.MONGO_URL;
 
 
 // Connect to mongoose. Catch any errors. If it fails, wait 5 seconds and try again. Keep trying until successful.
-function connect() {
-    mongoose.connect(url)
+async function connect() {
+    await mongoose.connect(url)
         .then(() => {
             console.log('Connected to MongoDB');
         })
@@ -17,3 +17,4 @@ function connect() {
 }
 
 connect();
+
