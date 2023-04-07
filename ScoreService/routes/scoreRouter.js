@@ -22,18 +22,20 @@ const router = express.Router();
  * Nu kan ik de score opslaan in de database bij de gebruiker.
  * Hierbij vermeld ik ook de targetid/index van welke positie in de array van targets.
  *
+ * Een target kunnen behalen door een gelijkende foto te uploaden (maar exact dezelfde
+ * niet natuurlijk)
  */
-
 router.post('/',
     async function (req, res, next) {
         const targetJson = req.body;
-        const {username, targetUsername, targetId, base64} = targetJson;
+        targetJson.username = req.user.username;
+        const {targetUsername, targetId, base64, username } = targetJson;
+
+        console.log(username)
 
         if (!username || !targetId || !targetUsername) {
             return next(createError(400, 'Invalid data provided'))
         } else {
-            console.log('targetId: ' + targetId)
-
             // retrieve image from targetservice.
             const payloadObject = {
                 "fromService": "score",

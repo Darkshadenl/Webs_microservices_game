@@ -38,7 +38,7 @@ async function setupForReceivingRPC() {
                 reply = interpretation.base64;
             }
 
-            console.info(' [.] Reply', reply)
+            // console.info(' [.] Reply', reply)
             console.log('%c [.] Done', 'color: red');
 
             channel.sendToQueue(message.properties.replyTo, Buffer.from(reply), {

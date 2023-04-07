@@ -7,12 +7,22 @@ const createError = require("http-errors");
 const paginate = require("../middleware/pagination");
 const removeFields = require("../tools/object_cleaner");
 
+
+// Het moet mogelijk zijn om jouw targets te verwijderen
+// Authentication
+
+
+
+/**
+ * Add a target
+ */
 router.post('/',
     async (req,
            res,
            next) => {
         const data = req.body;
-        const {username, location, base64} = data;
+        const {location, base64} = data;
+        const username = req.user.username;
 
         if (!username || !location || !base64) {
             return next(createError(400, 'Missing parameters'))
@@ -20,20 +30,31 @@ router.post('/',
 
         const user = await findTargetByUsername(username);
         let response = ""
+        let savedValue;
 
         try {
             if (user !== null && user !== undefined) {
-                await saveUserTarget(user, {location, base64})
+                savedValue = await saveUserTarget(user, {location, base64})
                 response = "User already existed, target is saved to user."
             } else {
                 // User does not exist, create user and save target to user
                 await saveUser(username)
                     .then((user) => {
-                        saveUserTarget(user, {location, base64})
+                        saveUserTarget(user, {location, base64}).then((s) => {
+                            savedValue = s;
+                        })
                     })
                 response = "User did not exist, user was created and target is saved to user."
             }
-            res.status(200).send(`Target created. ${response}..`);
+            console.log(savedValue)
+
+            res.status(200).json({
+                response: `Target created. ${response}..`,
+                data: {
+                    targetUsername: username,
+                    targetId: savedValue.targets[0]._id,
+                }
+        });
         } catch (e) {
             next(createError(400, `Something went wrong.`))
             console.trace(`Something went wrong ${e}`)
@@ -42,7 +63,7 @@ router.post('/',
 
 /**
  * Get all targets by all users
- * Use pagination
+ * Een overzicht van targets kunnen ophalen op bijv. plaatsnaam etc.;
  */
 router.get('/all', paginate, async (req, res, next) => {
     const {startIndex, endIndex} = res.pagination;
@@ -62,10 +83,6 @@ router.get('/all', paginate, async (req, res, next) => {
 
             if (locationFilter) {
                 plainObject.targets = plainObject.targets.filter(subTarget => subTarget.location === locationFilter);
-            }
-
-            for (const subTarget of plainObject.targets) {
-                removeFields(subTarget, ['_id']);
             }
 
             data.push(plainObject)
@@ -88,8 +105,6 @@ router.get('/all', paginate, async (req, res, next) => {
 /**
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
- *
- * TODO niet meer testen
  */
 router.get('/byUsername/:username',
     async (req,
@@ -146,8 +161,6 @@ router.get('/:id',
  })
 
 
-
-
 /**
  * Delete target by id.
  * This means a full target container, not just a single target.
@@ -156,12 +169,13 @@ router.delete('/:id', async (req,
                                     res,
                                     next) => {
     const id = req.params.id;
+    const username = req.user.username;
 
     if (!id) {
         next(new Error('Incorrect format.'));
     }
 
-    await deleteTarget(id).then((m) => {
+    await deleteTarget(id, username).then((m) => {
         if (m.code === 0) {
             res.send(m.message);
         }

@@ -3,20 +3,17 @@ const CircuitBreaker = require('opossum');
 const {interceptor, InterceptorError} = require('../../config/interceptor');
 
 options = {
-    timeout: 3000, // If our function takes longer than 3 seconds, trigger a failure
+    timeout: 30000, // If our function takes longer than 30 seconds, trigger a failure
     errorThresholdPercentage: 50, // When 50% of requests fail, trip the circuit
     resetTimeout: 3000 // After 3 seconds, try again.
 };
 
 function createNewCircuitBreaker(endpoint) {
-    const axiosInstance = axios.create({
-        baseURL: formatWithSlashes(endpoint),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-
-    axiosInstance.interceptors.request.use(interceptor, InterceptorError);
+    const options = {
+        timeout: 30000, // If our function takes longer than 30 seconds, trigger a failure
+        errorThresholdPercentage: 50, // When 50% of requests fail, trip the circuit
+        resetTimeout: 3000 // After 3 seconds, try again.
+    };
 
     return new CircuitBreaker(
         (method, resource, body, user) => {
@@ -27,6 +24,7 @@ function createNewCircuitBreaker(endpoint) {
                     'Content-Type': 'application/json',
                     'UserId': user ? user.id : undefined,
                     'RoleId': user ? user.role : undefined,
+                    'Username': user ? user.username : undefined,
                 }
             });
 
@@ -34,7 +32,7 @@ function createNewCircuitBreaker(endpoint) {
 
             return axiosInstance[method](resource, body);
         },
-        this.options
+        options
     );
 }
 
@@ -44,4 +42,4 @@ function formatWithSlashes(endpoint) {
     return (endpoint.endsWith('/')) ? endpoint : `${endpoint}/`;
 }
 
-module.exports = { formatWithSlashes, createNewCircuitBreaker }
+module.exports = { createNewCircuitBreaker }

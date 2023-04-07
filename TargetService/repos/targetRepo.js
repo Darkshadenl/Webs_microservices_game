@@ -40,18 +40,33 @@ async function saveUser(username) {
     }
  }
 
-async function deleteTarget(id) {
+async function deleteTarget(id, username) {
+    console.info('id username ', id, username);
+
     return new Promise((resolve, reject) => {
-        Target.deleteOne({ 'targets._id': id })
-            .then((ok) => {
-                if (ok.deletedCount === 0) {
-                    resolve({message: "Nothing deleted.", code: 0});
+        Target.findOneAndUpdate(
+            { username: username },
+            { $pull: { targets: { _id: id } } },
+            { useFindAndModify: false, new: true }
+        )
+            .then((result) => {
+                console.log('result: ', result);
+
+                if (!result) {
+                    resolve({ message: "No matching target found for the given username.", code: 0 });
+                } else {
+                    const deletedTargetCount = result.targets.filter((target) => target._id.toString() === id).length;
+                    if (deletedTargetCount === 0) {
+                        resolve({ message: "No matching target found for the given username.", code: 0 });
+                    } else {
+                        resolve({ message: "Deleted target successfully.", code: 1 });
+                    }
                 }
-                resolve({message: `Deleted ${ok.deletedCount} items successfully`, code: 1});
-            }).catch((e) => {
-            reject(`Deleting failed: ${e}`);
-        })
-    })
+            })
+            .catch((e) => {
+                reject(`Deleting failed: ${e}`);
+            });
+    });
 }
 
 
