@@ -1,23 +1,13 @@
 const express = require('express');
 const router = new express.Router();
-const passport = require('passport');
-const {Strategy: JwtStrategy} = require("passport-jwt");
-const {options: jwtOptions} = require("../../config/passportStrategy");
-const {send: messageSender} = require('../helpers/messageSender')
-const roles = require('../helpers/authorizationRole');
-const multer = require('multer');
-const strategy = require('../helpers/PasportStrategy')
-const { createNewCircuitBreaker } = require('../helpers/circuitBreaker')
-
 const scoreService    =  process.env.SCOREURL || 'http://localhost:3000/'
+const messageSender = require('../helpers/messageSender').send
+const multer = require('multer');
+const circuitBreaker = require('../helpers/circuitBreaker')
+    .createNewCircuitBreaker(scoreService);
 
-passport.use(strategy);
-router.use(passport.initialize());
 
-const circuitBreaker = createNewCircuitBreaker(scoreService);
-
-
-router.get('/test',roles('admin'), messageSender(circuitBreaker,'get'));
+router.get('/test', messageSender(circuitBreaker,'get'));
 router.get('/', messageSender(circuitBreaker,'get'));
 router.post('', messageSender(circuitBreaker,'post','score'))
 router.get('/getAllScores/:username',

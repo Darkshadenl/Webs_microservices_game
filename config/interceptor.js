@@ -3,11 +3,9 @@ const api = process.env.API_KEY;
 
 const interceptor = function (request) {
     const id = request.headers['UserId'];
-    console.log('api' + api)
-    console.log('id' + id)
-
-    if (id !== undefined) {
-        const token = jwt.sign({ api, id }, process.env.JWT_SECRET);
+    const role = request.headers['RoleId'];
+    if (id !== undefined && role !== undefined) {
+        const token = jwt.sign({ api, id, role }, process.env.JWT_SECRET);
         request.headers.Authorization = `Bearer ${token}`;
         delete request.headers['UserId'];
     } else {
