@@ -27,6 +27,7 @@ function createNewCircuitBreaker(endpoint) {
                     'Content-Type': 'application/json',
                     'UserId': user ? user.id : undefined,
                     'RoleId': user ? user.role : undefined,
+                    'Username': user ? user.username : undefined,
                 }
             });
 
@@ -44,4 +45,4 @@ function formatWithSlashes(endpoint) {
     return (endpoint.endsWith('/')) ? endpoint : `${endpoint}/`;
 }
 
-module.exports = { formatWithSlashes, createNewCircuitBreaker }
+module.exports = { createNewCircuitBreaker }

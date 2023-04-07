@@ -10,7 +10,7 @@ const multer = require('multer')
 router.post('/addtargets/:username',
     async (req, res, next) => {
         const image = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const username = req.params.username.charAt(0).toUpperCase() + req.params.username.slice(1);
+        const username = req.params.username;
         const location = "test"
         const user = await findTargetByUsername(username);
 

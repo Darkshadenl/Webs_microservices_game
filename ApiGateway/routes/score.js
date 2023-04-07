@@ -3,6 +3,7 @@ const router = new express.Router();
 const scoreService    =  process.env.SCOREURL || 'http://localhost:3000/'
 const messageSender = require('../helpers/messageSender').send
 const multer = require('multer');
+
 const circuitBreaker = require('../helpers/circuitBreaker')
     .createNewCircuitBreaker(scoreService);
 
@@ -12,7 +13,9 @@ router.get('/', messageSender(circuitBreaker,'get'));
 router.post('', messageSender(circuitBreaker,'post','score'))
 router.get('/getAllScores/:username',
     messageSender(circuitBreaker, 'get', 'scores'));
-router.get('/getMyScores', messageSender(circuitBreaker, 'get', 'scores'));
+router.get('/getMyScore/:username/:index', messageSender(circuitBreaker, 'get', 'scores'));
+router.get('/getMyScoreOnTarget/:username/:targetUsername/:targetId', messageSender(circuitBreaker, 'get', 'scores'));
+
 
 const upload = multer({
     storage: multer.memoryStorage(),

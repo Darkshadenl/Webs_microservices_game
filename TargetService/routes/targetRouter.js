@@ -42,7 +42,7 @@ router.post('/',
 
 /**
  * Get all targets by all users
- * Use pagination
+ * Een overzicht van targets kunnen ophalen op bijv. plaatsnaam etc.;
  */
 router.get('/all', paginate, async (req, res, next) => {
     const {startIndex, endIndex} = res.pagination;
@@ -62,10 +62,6 @@ router.get('/all', paginate, async (req, res, next) => {
 
             if (locationFilter) {
                 plainObject.targets = plainObject.targets.filter(subTarget => subTarget.location === locationFilter);
-            }
-
-            for (const subTarget of plainObject.targets) {
-                removeFields(subTarget, ['_id']);
             }
 
             data.push(plainObject)
@@ -88,8 +84,6 @@ router.get('/all', paginate, async (req, res, next) => {
 /**
  * Get a single target by username.
  * Can use query filters to filter on index or on id. If id is provided, index is ignored.
- *
- * TODO niet meer testen
  */
 router.get('/byUsername/:username',
     async (req,
@@ -146,22 +140,24 @@ router.get('/:id',
  })
 
 
-
-
 /**
  * Delete target by id.
  * This means a full target container, not just a single target.
+ *
+ * Het moet mogelijk zijn om jou targets te verwijderen
+ * Authentication
  */
 router.delete('/:id', async (req,
                                     res,
                                     next) => {
     const id = req.params.id;
+    const username = req.user.username;
 
     if (!id) {
         next(new Error('Incorrect format.'));
     }
 
-    await deleteTarget(id).then((m) => {
+    await deleteTarget(id, username).then((m) => {
         if (m.code === 0) {
             res.send(m.message);
         }

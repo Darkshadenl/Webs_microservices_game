@@ -27,22 +27,24 @@ router.get('/admin',passport.authenticate('jwt', { session: false }), roles('adm
 } )
 
 // Setup registration
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const salt = bcrypt.genSaltSync();
 
     const user = new User({
-        email: req.body.email,
+        username: req.body.username,
         password: bcrypt.hashSync(req.body.password, salt),
         role: req.body.role,
         salt: salt,
         isOwner: req.body.isOwner,
     });
 
-    user.save()
+    await user.save()
         .then(user => {
+            console.info('User created successfully')
             res.status(201).json(user);
         })
         .catch(err => {
+            console.log(err)
             res.status(400).json({
                 error: err
             });
@@ -52,13 +54,18 @@ router.post('/register', (req, res) => {
 
 router.post('/login', async function (req, res, next) {
     try {
-        const user = await User.findOne({ email: req.body.email })
+        const user = await User.findOne({ username: req.body.username })
         if (user) {
             const checkPassword = await bcrypt.compare(req.body.password, user.password)
             if(checkPassword){
                 const token = createOpaqueToken(user);
                 res.status(201).json({
-                    user: user,
+                    user: {
+                        username: user.username,
+                        role: user.role,
+                        id: user.id,
+                        salt: user.salt,
+                    },
                     token: token
                 });
                 return
@@ -83,7 +90,8 @@ router.post('/login', async function (req, res, next) {
 function createOpaqueToken (user) {
     return jwt.sign({
         id: user.id,
-        role: user.role
+        role: user.role,
+        username: user.username,
     }, process.env.JWT_SECRET);
 }
 
