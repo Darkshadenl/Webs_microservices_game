@@ -104,9 +104,12 @@ router.delete('/deleteMyScoreOnTarget/:targetUsername/:targetId', async (req, re
 });
 
 router.delete('/deletePictureOnTarget/:scoreId', async (req, res, next) => {
-    const targetId = req.params.targetId;
     const scoreId = req.params.scoreId;
     const targetUploader = req.user.username;
+
+    // if (req.user.role !== "admin") {
+    //     return res.status(401).json({ message: 'Unauthorized' });
+    // }
 
     try {
         const response = await deletePictureOnTarget(scoreId, targetUploader);
