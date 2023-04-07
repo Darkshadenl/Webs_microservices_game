@@ -28,13 +28,14 @@ const router = express.Router();
 router.post('/',
     async function (req, res, next) {
         const targetJson = req.body;
-        const {username, targetUsername, targetId, base64} = targetJson;
+        targetJson.username = req.user.username;
+        const {targetUsername, targetId, base64, username } = targetJson;
+
+        console.log(username)
 
         if (!username || !targetId || !targetUsername) {
             return next(createError(400, 'Invalid data provided'))
         } else {
-            console.log('targetId: ' + targetId)
-
             // retrieve image from targetservice.
             const payloadObject = {
                 "fromService": "score",

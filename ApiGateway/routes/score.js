@@ -11,10 +11,16 @@ const circuitBreaker = require('../helpers/circuitBreaker')
 router.get('/test', messageSender(circuitBreaker,'get'));
 router.get('/', messageSender(circuitBreaker,'get'));
 router.post('', messageSender(circuitBreaker,'post','score'))
-router.get('/getAllScores/:username',
+router.get('/getAllScores/',
     messageSender(circuitBreaker, 'get', 'scores'));
-router.get('/getMyScore/:username/:index', messageSender(circuitBreaker, 'get', 'scores'));
-router.get('/getMyScoreOnTarget/:username/:targetUsername/:targetId', messageSender(circuitBreaker, 'get', 'scores'));
+router.get('/getMyScoreOnTarget/:targetUsername/:targetId', messageSender(circuitBreaker, 'get', 'scores'));
+
+router.get('/scoresOnMyTarget/:targetId', messageSender(circuitBreaker, 'get', 'scores'));
+
+router.delete('/deletePictureOnTarget/:scoreId', messageSender(circuitBreaker, 'delete', 'scores'))
+router.delete('/deleteMyScoreOnTarget/:targetUsername/:targetId', messageSender(circuitBreaker, 'delete', 'scores'))
+
+
 
 
 const upload = multer({
@@ -27,7 +33,8 @@ router.post('/convertImage', upload.single('image'), (req, res) => {
         return res.status(400).send({ message: 'No file uploaded' });
     }
     const base64String = file.buffer.toString('base64');
-    res.send(base64String);
+    console.log(base64String)
+    res.json({base64String});
 })
 
 

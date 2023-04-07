@@ -14,7 +14,7 @@ function buildScoreEntry(base64image, targetJSON, score) {
     if (base64image === undefined || targetUsername === undefined || targetId === undefined)
         throw new Error('Missing parameters');
 
-    const achieved = score > 0.05 && score < 0.3
+    const achieved = score > 0.1 && score < 0.5
 
     return {
         username: username,
@@ -109,6 +109,7 @@ async function getScoresByTargetUsername(targetUsername) {
     return targetScore.scores;
 }
 
+
 /**
  * Retrieve a score entry object by target username and index
  * @param {string} targetUsername - The target username associated with the score entry to retrieve
@@ -130,6 +131,9 @@ async function getScoresByTargetIndex(targetUsername, index) {
 
     return targetScore.scores[index];
 }
+
+
+
 
 /**
  * Retrieves scores for a given user-target pair
@@ -157,30 +161,50 @@ async function getScoresByUserAndTarget(username, targetUsername, targetId) {
 
 
 
-// De scores inzien van alle gebruikers van mijn target
-// authentication
+async function deleteScore(username, targetUsername, targetId) {
+    try {
+        const result = await Score.findOneAndUpdate(
+            { username: username },
+            { $pull: { scored: { targetUsername: targetUsername, targetId: targetId } } },
+            { useFindAndModify: false, new: true }
+        );
 
+        if (!result) {
+            return { status: 404, message: 'No matching target found for the given targetUsername and targetId.' };
+        } else {
+            return { status: 200, message: 'Deleted score successfully.', updatedDocument: result };
+        }
+    } catch (e) {
+        console.error('Error deleting score:', e);
+        throw new Error('Something went wrong while deleting the score.');
+    }
+}
 
+async function deletePictureOnTarget(scoreId, targetUploader) {
+    try {
+        const result = await Score.findOneAndUpdate(
+            { 'scored._id': scoreId },
+            { $unset: { 'scored.$.base64': "" } },
+            { useFindAndModify: false, new: true }
+        );
 
-
-// Mijn targets verwijderen
-// authentication
-
-
-
-// Foto's van users op mijn target verwijderen
-// authentication
-
-
-
-
-
+        if (!result) {
+            return { status: 404, message: 'No matching target found for the given targetId and uploaderUsername.' };
+        } else {
+            return { status: 200, message: 'Deleted picture successfully.', updatedDocument: result };
+        }
+    } catch (e) {
+        console.error('Error deleting picture:', e);
+        throw new Error('Something went wrong while deleting the picture.');
+    }
+}
 
 module.exports = {
     buildScoreEntry,
     saveScore,
     getAllScores,
     getScoresByTargetUsername,
-    getScoresByTargetIndex,
-    getScoresByUserAndTarget
+    getScoresByUserAndTarget,
+    deleteScore,
+    deletePictureOnTarget
 }
